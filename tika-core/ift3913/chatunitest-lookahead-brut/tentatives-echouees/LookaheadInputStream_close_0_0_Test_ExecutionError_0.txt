@@ -1,0 +1,65 @@
+package org.apache.tika.io;
+
+import org.apache.tika.io.LookaheadInputStream;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.io.IOException;
+import java.io.InputStream;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class LookaheadInputStream_close_0_0_Test {
+
+    @Mock
+    private InputStream stream;
+
+    private LookaheadInputStream lookaheadInputStream;
+
+    @BeforeEach
+    public void setUp() {
+        lookaheadInputStream = new LookaheadInputStream(stream, 10);
+    }
+
+    @Test
+    public void testClose() throws IOException {
+        lookaheadInputStream.close();
+        verify(stream, times(1)).reset();
+        verify(stream, times(1)).close();
+    }
+
+    @Test
+    public void testCloseWithIOException() throws IOException {
+        doThrow(new IOException()).when(stream).reset();
+        assertThrows(IOException.class, () -> lookaheadInputStream.close());
+        verify(stream, times(1)).reset();
+        verify(stream, times(1)).close();
+    }
+}
+
+--------------------------------------------
+Error in testClose(): line 30 : Wanted but not invoked:
+stream.close();
+-> at java.base/java.io.InputStream.close(InputStream.java:665)
+
+However, there were exactly 2 interactions with this mock:
+stream.mark(10);
+-> at org.apache.tika.io.LookaheadInputStream.<init>(LookaheadInputStream.java:68)
+
+stream.reset();
+-> at org.apache.tika.io.LookaheadInputStream.close(LookaheadInputStream.java:75)
+
+
+Error in testCloseWithIOException(): line 38 : Wanted but not invoked:
+stream.close();
+-> at java.base/java.io.InputStream.close(InputStream.java:665)
+
+However, there were exactly 2 interactions with this mock:
+stream.mark(10);
+-> at org.apache.tika.io.LookaheadInputStream.<init>(LookaheadInputStream.java:68)
+
+stream.reset();
+-> at org.apache.tika.io.LookaheadInputStream.close(LookaheadInputStream.java:75)
+

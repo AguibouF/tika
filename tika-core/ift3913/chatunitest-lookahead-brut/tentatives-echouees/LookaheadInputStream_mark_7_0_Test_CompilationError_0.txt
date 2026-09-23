@@ -1,0 +1,283 @@
+package org.apache.tika.io;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.io.IOException;
+import java.io.InputStream;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class LookaheadInputStream_mark_7_0_Test {
+
+    @Mock
+    private InputStream mockStream;
+
+    private LookaheadInputStream lookaheadInputStream;
+
+    @BeforeEach
+    public void setUp() {
+        lookaheadInputStream = new LookaheadInputStream(mockStream, 10);
+    }
+
+    @Test
+    public void testMark() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithNegativeReadlimit() throws IOException {
+        // Arrange
+        int readlimit = -1;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithZeroReadlimit() throws IOException {
+        // Arrange
+        int readlimit = 0;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithPositiveReadlimit() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanBuffered() throws IOException {
+        // Arrange
+        int readlimit = 20;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBuffered() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanBuffered() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToPosition() throws IOException {
+        // Arrange
+        int readlimit = 0;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanPosition() throws IOException {
+        // Arrange
+        int readlimit = -5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanPosition() throws IOException {
+        // Arrange
+        int readlimit = 15;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBufferedAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanBufferedAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanBufferedAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 15;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBufferedAndPositionAndMark() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanBufferedAndPositionAndMark() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanBufferedAndPositionAndMark() throws IOException {
+        // Arrange
+        int readlimit = 15;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBufferedAndPositionAndMarkAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanBufferedAndPositionAndMarkAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanBufferedAndPositionAndMarkAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 15;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBufferedAndPositionAndMarkAndPositionAndMark() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanBufferedAndPositionAndMarkAndPositionAndMark() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanBufferedAndPositionAndMarkAndPositionAndMark() throws IOException {
+        // Arrange
+        int readlimit = 15;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, lookaheadInputStream.mark);
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBufferedAndPositionAndMarkAndPositionAndMarkAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+    }
+}
+
+--------------------------------------------
+Error in LookaheadInputStream_mark_7_0_Test: line -1 : Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+Error in LookaheadInputStream_mark_7_0_Test: line -1 : Supported source version 'RELEASE_17' from annotation processor 'org.apache.tika.annotation.TikaComponentProcessor' less than -source '21'
+Error in LookaheadInputStream_mark_7_0_Test: line 32 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 42 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 52 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 62 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 72 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 82 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 92 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 102 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 112 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 122 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 132 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 142 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 152 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 162 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 172 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 182 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 192 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 202 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 212 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 222 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 232 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_mark_7_0_Test: line 242 : mark has private access in org.apache.tika.io.LookaheadInputStream

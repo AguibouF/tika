@@ -1,0 +1,72 @@
+package org.apache.tika.io;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.io.IOException;
+import java.io.InputStream;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class LookaheadInputStream_available_5_0_Test {
+
+    @Mock
+    private InputStream mockStream;
+
+    private LookaheadInputStream lookaheadInputStream;
+
+    @BeforeEach
+    public void setUp() {
+        lookaheadInputStream = new LookaheadInputStream(mockStream, 10);
+    }
+
+    @Test
+    public void testAvailable() throws IOException {
+        when(mockStream.available()).thenReturn(15);
+        int result = lookaheadInputStream.available();
+        assertEquals(5, result);
+        verify(mockStream, times(1)).available();
+    }
+
+    @Test
+    public void testAvailableWithNoBufferedData() throws IOException {
+        when(mockStream.available()).thenReturn(0);
+        int result = lookaheadInputStream.available();
+        assertEquals(0, result);
+        verify(mockStream, times(1)).available();
+    }
+
+    @Test
+    public void testAvailableWithNegativeBufferedData() throws IOException {
+        when(mockStream.available()).thenReturn(-5);
+        int result = lookaheadInputStream.available();
+        assertEquals(-5, result);
+        verify(mockStream, times(1)).available();
+    }
+
+    @Test
+    public void testAvailableWithBufferedData() throws IOException {
+        when(mockStream.available()).thenReturn(20);
+        lookaheadInputStream.read();
+        lookaheadInputStream.read();
+        int result = lookaheadInputStream.available();
+        assertEquals(18, result);
+        verify(mockStream, times(1)).available();
+    }
+}
+
+--------------------------------------------
+Error in testAvailableWithNegativeBufferedData(): line 45 : org.opentest4j.AssertionFailedError: expected: <-5> but was: <0>
+Error in testAvailableWithNoBufferedData(): line 38 : Wanted but not invoked:
+mockStream.available();
+-> at java.base/java.io.InputStream.available(InputStream.java:652)
+
+However, there was exactly 1 interaction with this mock:
+mockStream.mark(10);
+-> at org.apache.tika.io.LookaheadInputStream.<init>(LookaheadInputStream.java:68)
+
+
+Error in testAvailable(): line 29 : org.opentest4j.AssertionFailedError: expected: <5> but was: <0>
+Error in testAvailableWithBufferedData(): line 55 : org.opentest4j.AssertionFailedError: expected: <18> but was: <0>

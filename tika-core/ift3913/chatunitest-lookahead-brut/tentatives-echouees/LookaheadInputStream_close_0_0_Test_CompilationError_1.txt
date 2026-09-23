@@ -1,0 +1,66 @@
+package org.apache.tika.io;
+
+import org.apache.tika.io.LookaheadInputStream;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.io.IOException;
+import java.io.InputStream;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class LookaheadInputStream_close_0_0_Test {
+
+    @Mock
+    private InputStream stream;
+
+    private LookaheadInputStream lookaheadInputStream;
+
+    @BeforeEach
+    public void setUp() {
+        lookaheadInputStream = new LookaheadInputStream(stream, 10);
+    }
+
+    @Test
+    public void testClose() throws IOException {
+        lookaheadInputStream.close();
+        verify(stream, times(1)).reset();
+        verify(stream, times(1)).close();
+    }
+
+    @Test
+    public void testCloseWithIOException() throws IOException {
+        doThrow(new IOException()).when(stream).reset();
+        assertThrows(IOException.class, () -> lookaheadInputStream.close());
+        verify(stream, times(1)).reset();
+        verify(stream, times(1)).close();
+    }
+
+    @Test
+    public void testCloseWithNullStream() throws IOException {
+        when(stream).reset();
+        when(stream).close();
+        lookaheadInputStream = new LookaheadInputStream(null, 10);
+        lookaheadInputStream.close();
+        verify(stream, never()).reset();
+        verify(stream, never()).close();
+    }
+}
+
+--------------------------------------------
+Error in LookaheadInputStream_close_0_0_Test: line -1 : Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+Error in LookaheadInputStream_close_0_0_Test: line -1 : Supported source version 'RELEASE_17' from annotation processor 'org.apache.tika.annotation.TikaComponentProcessor' less than -source '21'
+Error in LookaheadInputStream_close_0_0_Test: line 43 : cannot find symbol
+  symbol:   method reset()
+  location: interface org.mockito.stubbing.OngoingStubbing<java.io.InputStream>
+Error in LookaheadInputStream_close_0_0_Test: line 44 : cannot find symbol
+  symbol:   method close()
+  location: interface org.mockito.stubbing.OngoingStubbing<java.io.InputStream>

@@ -1,0 +1,96 @@
+package org.apache.tika.io;
+
+import org.apache.tika.io.LookaheadInputStream;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.io.IOException;
+import java.io.InputStream;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class LookaheadInputStream_read_2_0_Test {
+
+    @Mock
+    private InputStream mockStream;
+
+    private LookaheadInputStream lookaheadInputStream;
+
+    @BeforeEach
+    public void setUp() {
+        lookaheadInputStream = new LookaheadInputStream(mockStream, 10);
+    }
+
+    @Test
+    public void testRead() throws IOException {
+        when(mockStream.read()).thenReturn(100);
+        when(mockStream.available()).thenReturn(1);
+        int result = lookaheadInputStream.read();
+        assertEquals(100, result);
+        verify(mockStream, times(1)).read();
+        verify(mockStream, times(1)).available();
+    }
+
+    @Test
+    public void testReadEndOfStream() throws IOException {
+        when(mockStream.read()).thenReturn(-1);
+        int result = lookaheadInputStream.read();
+        assertEquals(-1, result);
+        verify(mockStream, times(1)).read();
+    }
+
+    @Test
+    public void testReadIOException() throws IOException {
+        when(mockStream.read()).thenThrow(new IOException("Mocked IOException"));
+        assertThrows(IOException.class, () -> lookaheadInputStream.read());
+        verify(mockStream, times(1)).read();
+    }
+
+    @Test
+    public void testFill() throws IOException {
+        when(mockStream.available()).thenReturn(0);
+        when(mockStream.read(any(byte[].class), anyInt(), anyInt())).thenReturn(5);
+        ReflectionTestUtils.invokeMethod(lookaheadInputStream, "fill");
+        verify(mockStream, times(1)).available();
+        verify(mockStream, times(1)).read(any(byte[].class), anyInt(), anyInt());
+    }
+
+    @Test
+    public void testFillEndOfStream() throws IOException {
+        when(mockStream.available()).thenReturn(0);
+        when(mockStream.read(any(byte[].class), anyInt(), anyInt())).thenReturn(-1);
+        ReflectionTestUtils.invokeMethod(lookaheadInputStream, "fill");
+        verify(mockStream, times(1)).available();
+        verify(mockStream, times(1)).read(any(byte[].class), anyInt(), anyInt());
+    }
+
+    @Test
+    public void testFillIOException() throws IOException {
+        when(mockStream.available()).thenReturn(0);
+        when(mockStream.read(any(byte[].class), anyInt(), anyInt())).thenThrow(new IOException("Mocked IOException"));
+        assertThrows(IOException.class, () -> ReflectionTestUtils.invokeMethod(lookaheadInputStream, "fill"));
+        verify(mockStream, times(1)).available();
+        verify(mockStream, times(1)).read(any(byte[].class), anyInt(), anyInt());
+    }
+}
+
+--------------------------------------------
+Error in LookaheadInputStream_read_2_0_Test: line -1 : Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+Error in LookaheadInputStream_read_2_0_Test: line -1 : Supported source version 'RELEASE_17' from annotation processor 'org.apache.tika.annotation.TikaComponentProcessor' less than -source '21'
+Error in LookaheadInputStream_read_2_0_Test: line 55 : cannot find symbol
+  symbol:   variable ReflectionTestUtils
+  location: class org.apache.tika.io.LookaheadInputStream_read_2_0_Test
+Error in LookaheadInputStream_read_2_0_Test: line 64 : cannot find symbol
+  symbol:   variable ReflectionTestUtils
+  location: class org.apache.tika.io.LookaheadInputStream_read_2_0_Test
+Error in LookaheadInputStream_read_2_0_Test: line 73 : cannot find symbol
+  symbol:   variable ReflectionTestUtils
+  location: class org.apache.tika.io.LookaheadInputStream_read_2_0_Test
