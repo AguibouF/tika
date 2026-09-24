@@ -25,7 +25,7 @@ Classes étudiées :
 
 ## 1. Classes à tester
 
-Après le clone du dépôt Tika, on a construit le module et ses dépendances :
+Après le clone du dépôt Tika, on a construit le module et ses dépendances, depuis la racine du dépôt :
 
 ```bash
 ./mvnw clean install -am -pl :tika-core
@@ -389,7 +389,7 @@ On a ajouté le plugin `pitest-maven` à `tika-core/pom.xml`, avec le plugin JUn
 </plugin>
 ```
 
-**Problème rencontré.** Lancé depuis un chemin qui contient des accents (`...\Qualité du logiciel et métriques\...`), PIT termine « avec succès », mais tous les mutants sont `NO_COVERAGE` : la JVM enfant ne trouve pas les classes de test. On contourne le problème en créant un lecteur virtuel sans accents :
+**Problème rencontré.** Lancé depuis un chemin qui contient des accents (`...\Qualité du logiciel et métriques\...`), PIT termine « avec succès », mais tous les mutants sont `NO_COVERAGE`. En mode verbeux (`-Dverbose=true`), le processus secondaire de PIT (le « minion ») affiche `ClassNotFoundException` pour chaque classe de test : il ne trouve pas `target/test-classes`. Ce sont bien les **accents** qui posent problème, et non les espaces : le même projet, atteint par un chemin avec des espaces mais sans accents, donne les bons résultats. Désactiver `useClasspathJar` ne change rien. On contourne le problème en créant un lecteur virtuel sans accents :
 
 ```bash
 subst V: "<chemin>\tika-main"
@@ -713,35 +713,92 @@ En local, `mvn test` passe avec Checkstyle, Spotless et RAT activés : **37 test
 
 ## 9. Reproduire les résultats
 
-Depuis `tika-core`, dans un chemin **sans accents**. Le `pom.xml` cible les deux classes : on précise donc `-DtargetClasses` pour analyser une classe à la fois.
+Les options `-D` sont entre guillemets doubles : sinon PowerShell coupe `-Dsurefire.failIfNoSpecifiedTests=false` au premier point. Le `pom.xml` cible les deux classes : on précise donc `-DtargetClasses` pour analyser une classe à la fois.
+
+**Toutes les commandes de cette section se lancent depuis le dossier `tika-core`, et non depuis la racine du dépôt.** Lancé depuis la racine, PIT s'applique aux 124 modules de Tika et échoue dès le module `tika-annotation-processor` avec « No mutations found ». Depuis la racine du dépôt :
+
+```bash
+cd tika-core
+```
+
+**Seulement si le chemin du dépôt contient des accents.** Les commandes `mvn test` fonctionnent depuis n'importe quel dossier, mais **PIT ne fonctionne pas si le chemin contient des accents** (voir la section 5.1). Il termine alors par `BUILD SUCCESS`, mais avec `Ran 0 tests` et 0 mutant tué. Dans ce cas, avant de lancer PIT, on crée un lecteur virtuel sans accents et on se place dedans :
+
+```bash
+# à refaire après chaque redémarrage de Windows ; remplacer le chemin par celui du dépôt
+subst V: "C:\chemin\vers\tika-main"
+cd V:\tika-core
+```
+
+Les commandes ci-dessous se lancent alors depuis `V:\tika-core`.
 
 Classe A :
 
 ```bash
 # tests du package
-mvn test -Dtest='org.apache.tika.sax.xpath.*Test' -Dsurefire.failIfNoSpecifiedTests=false
+mvn test "-Dtest=org.apache.tika.sax.xpath.*Test" "-Dsurefire.failIfNoSpecifiedTests=false"
 
 # PIT : tests originaux seuls
-mvn test-compile org.pitest:pitest-maven:mutationCoverage -DtargetClasses=org.apache.tika.sax.xpath.XPathParser -DtargetTests=org.apache.tika.sax.xpath.XPathParserTest -Dpit.label=original
+mvn test-compile org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.sax.xpath.XPathParser" "-DtargetTests=org.apache.tika.sax.xpath.XPathParserTest" "-Dpit.label=original"
 
 # PIT : tests ChatUniTest seuls
-mvn org.pitest:pitest-maven:mutationCoverage -DtargetClasses=org.apache.tika.sax.xpath.XPathParser -DtargetTests=org.apache.tika.sax.xpath.XPathParser_addPrefix_0_0_Test,org.apache.tika.sax.xpath.XPathParser_parse_1_0_Test -Dpit.label=chatunitest
+mvn org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.sax.xpath.XPathParser" "-DtargetTests=org.apache.tika.sax.xpath.XPathParser_addPrefix_0_0_Test,org.apache.tika.sax.xpath.XPathParser_parse_1_0_Test" "-Dpit.label=chatunitest"
+
+# PIT : originaux et ChatUniTest
+mvn org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.sax.xpath.XPathParser" "-DtargetTests=org.apache.tika.sax.xpath.XPathParserTest,org.apache.tika.sax.xpath.XPathParser_addPrefix_0_0_Test,org.apache.tika.sax.xpath.XPathParser_parse_1_0_Test" "-Dpit.label=combine"
 
 # PIT : tous les tests (originaux, ChatUniTest et manuels)
-mvn org.pitest:pitest-maven:mutationCoverage -DtargetClasses=org.apache.tika.sax.xpath.XPathParser -DtargetTests='org.apache.tika.sax.xpath.*Test' -Dpit.label=complet
+mvn org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.sax.xpath.XPathParser" "-DtargetTests=org.apache.tika.sax.xpath.*Test" "-Dpit.label=complet"
 ```
 
 Classe B :
 
 ```bash
-mvn test -Dtest='org.apache.tika.io.LookaheadInputStream*Test' -Dsurefire.failIfNoSpecifiedTests=false
+# tests de la classe
+mvn test "-Dtest=org.apache.tika.io.LookaheadInputStream*Test" "-Dsurefire.failIfNoSpecifiedTests=false"
 
-mvn org.pitest:pitest-maven:mutationCoverage -DtargetClasses=org.apache.tika.io.LookaheadInputStream -DtargetTests=org.apache.tika.io.LookaheadInputStreamTest -Dpit.label=lookahead-original
-mvn org.pitest:pitest-maven:mutationCoverage -DtargetClasses=org.apache.tika.io.LookaheadInputStream -DtargetTests=org.apache.tika.io.LookaheadInputStream_read_3_0_Test,org.apache.tika.io.LookaheadInputStream_markSupported_6_0_Test -Dpit.label=lookahead-chatunitest
-mvn org.pitest:pitest-maven:mutationCoverage -DtargetClasses=org.apache.tika.io.LookaheadInputStream -DtargetTests='org.apache.tika.io.LookaheadInputStream*Test' -Dpit.label=lookahead-complet
+# PIT : tests originaux seuls
+mvn org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.io.LookaheadInputStream" "-DtargetTests=org.apache.tika.io.LookaheadInputStreamTest" "-Dpit.label=lookahead-original"
+
+# PIT : tests ChatUniTest seuls
+mvn org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.io.LookaheadInputStream" "-DtargetTests=org.apache.tika.io.LookaheadInputStream_read_3_0_Test,org.apache.tika.io.LookaheadInputStream_markSupported_6_0_Test" "-Dpit.label=lookahead-chatunitest"
+
+# PIT : originaux et ChatUniTest
+mvn org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.io.LookaheadInputStream" "-DtargetTests=org.apache.tika.io.LookaheadInputStreamTest,org.apache.tika.io.LookaheadInputStream_read_3_0_Test,org.apache.tika.io.LookaheadInputStream_markSupported_6_0_Test" "-Dpit.label=lookahead-combine"
+
+# PIT : tous les tests (originaux, ChatUniTest et manuels)
+mvn org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.io.LookaheadInputStream" "-DtargetTests=org.apache.tika.io.LookaheadInputStream*Test" "-Dpit.label=lookahead-complet"
 ```
 
-Les rapports sont produits dans `tika-core/target/pit-reports/<label>/index.html`.
+### Rapports produits par PIT
+
+**Déroulement d'une commande PIT.** Chaque commande `mutationCoverage` se déroule en trois étapes :
+
+1. **Mesure de la couverture.** PIT exécute une première fois les tests indiqués par `-DtargetTests`, sans aucune mutation, pour savoir quelles lignes de la classe ciblée (`-DtargetClasses`) chaque test exécute.
+2. **Génération des mutants.** PIT applique les opérateurs de mutation par défaut (`DEFAULTS`) au bytecode de la classe ciblée, par exemple en supprimant une condition ou en remplaçant une valeur de retour par `null`. Il obtient 32 mutants pour `XPathParser` et 33 pour `LookaheadInputStream`.
+3. **Exécution des tests sur chaque mutant.** Pour chaque mutant, PIT ne relance que les tests qui couvrent la ligne modifiée. Le mutant est `KILLED` si au moins un test échoue, `SURVIVED` si tous passent, et `NO_COVERAGE` si aucun test n'exécute la ligne.
+
+**Où vont les rapports.** La configuration de PIT dans `tika-core/pom.xml` (section 5.1) fixe l'emplacement et le format des rapports :
+
+- `<reportsDirectory>${project.build.directory}/pit-reports/${pit.label}</reportsDirectory>` : chaque commande écrit dans `tika-core/target/pit-reports/<label>/`, où `<label>` est la valeur passée avec `-Dpit.label`. Les huit commandes de cette section produisent donc huit dossiers séparés : `original`, `chatunitest`, `combine`, `complet`, `lookahead-original`, `lookahead-chatunitest`, `lookahead-combine` et `lookahead-complet`.
+- `<timestampedReports>false</timestampedReports>` : le dossier ne porte pas de date. Relancer une commande avec le même label **écrase** le rapport précédent.
+- `<outputFormats>` : HTML, XML et CSV. `<exportLineCoverage>true</exportLineCoverage>` exporte en plus la couverture de lignes.
+
+**Contenu d'un dossier de rapport**, par exemple `target/pit-reports/original/` :
+
+| Fichier | Contenu |
+|---|---|
+| `index.html` | Résumé à ouvrir dans un navigateur : couverture de lignes, score de mutation et force des tests, par package puis par classe. |
+| `org.apache.tika.sax.xpath/XPathParser.java.html` | Code source annoté. Chaque ligne est colorée selon sa couverture, et la liste des mutants de la ligne indique pour chacun s'il est tué ou survivant. |
+| `mutations.xml` | Un élément `<mutation>` par mutant : ligne, méthode, opérateur, description, statut (`KILLED`, `SURVIVED`, `NO_COVERAGE`) et test qui l'a tué (`killingTest`). |
+| `mutations.csv` | Les mêmes informations sous forme de tableau, une ligne par mutant. |
+| `linecoverage.xml` | Les tests qui couvrent chaque bloc de code. |
+
+Les résumés du terminal (`Generated 32 mutations Killed 20 (63%)`, `Line Coverage ... 40/50 (80%)`) donnent les chiffres des tableaux de la section 5.2. Les tableaux par mutant de la section 5.3 et les tests tueurs cités à la section 6 ont été extraits des fichiers `mutations.xml` des différents labels.
+
+**Remarques.**
+
+- Les rapports sont dans `target/`, qui est ignoré par Git (`.gitignore`) et effacé par `mvn clean`. Ils ne sont donc pas versionnés : il faut relancer les commandes ci-dessus pour les régénérer.
+- Si le chemin contient des accents, PIT produit quand même ces fichiers, mais avec tous les mutants en `NO_COVERAGE` (voir la section 5.1).
 
 ## 10. Déclaration d'utilisation de l'IA générative
 
