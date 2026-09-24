@@ -2,10 +2,10 @@
 
 **Auteurs :**
 
-| Nom | Matricule | GitHub |
-|---|---|---|
+| Nom | Matricule | GitHub                                   |
+|---|---|------------------------------------------|
 | Aguibou FOFANA | 20332292 | [@AguibouF](https://github.com/AguibouF) |
-| Anas HARTI | 20223975 | [@ax23399](https://github.com/ax23399) |
+| Anas HARTI | 20223975 | [@ax23399](https://github.com/axh23399)  |
 
 Cas d'étude : [Apache Tika](https://github.com/apache/tika), module `tika-core`.
 Classes étudiées :
