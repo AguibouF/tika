@@ -1,0 +1,86 @@
+package org.apache.tika.io;
+
+import org.apache.tika.io.LookaheadInputStream;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.io.IOException;
+import java.io.InputStream;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class LookaheadInputStream_skip_4_0_Test {
+
+    @Mock
+    private InputStream mockStream;
+
+    private LookaheadInputStream lookaheadInputStream;
+
+    @BeforeEach
+    public void setUp() {
+        lookaheadInputStream = new LookaheadInputStream(mockStream, 10);
+    }
+
+    @Test
+    public void testSkip() throws IOException {
+        when(mockStream.read(any(byte[].class), anyInt(), anyInt())).thenReturn(5);
+        long result = lookaheadInputStream.skip(3);
+        assertEquals(3, result);
+        assertEquals(3, getPrivateField(lookaheadInputStream, "position"));
+        verify(mockStream, times(1)).read(any(byte[].class), anyInt(), anyInt());
+    }
+
+    @Test
+    public void testSkipMoreThanAvailable() throws IOException {
+        when(mockStream.read(any(byte[].class), anyInt(), anyInt())).thenReturn(5);
+        long result = lookaheadInputStream.skip(10);
+        assertEquals(5, result);
+        assertEquals(5, getPrivateField(lookaheadInputStream, "position"));
+        verify(mockStream, times(1)).read(any(byte[].class), anyInt(), anyInt());
+    }
+
+    @Test
+    public void testSkipZero() throws IOException {
+        long result = lookaheadInputStream.skip(0);
+        assertEquals(0, result);
+        assertEquals(0, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testSkipNegative() throws IOException {
+        long result = lookaheadInputStream.skip(-1);
+        assertEquals(0, result);
+        assertEquals(0, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testSkipAfterClose() throws IOException {
+        when(mockStream.read(any(byte[].class), anyInt(), anyInt())).thenReturn(5);
+        lookaheadInputStream.close();
+        long result = lookaheadInputStream.skip(3);
+        assertEquals(0, result);
+        assertEquals(0, getPrivateField(lookaheadInputStream, "position"));
+        verify(mockStream, never()).read(any(byte[].class), anyInt(), anyInt());
+    }
+
+    private Object getPrivateField(Object obj, String fieldName) throws Exception {
+        Field field = obj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(obj);
+    }
+}
+
+--------------------------------------------
+Error in LookaheadInputStream_skip_4_0_Test: line -1 : Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+Error in LookaheadInputStream_skip_4_0_Test: line -1 : Supported source version 'RELEASE_17' from annotation processor 'org.apache.tika.annotation.TikaComponentProcessor' less than -source '21'
+Error in LookaheadInputStream_skip_4_0_Test: line 69 : cannot find symbol
+  symbol:   class Field
+  location: class org.apache.tika.io.LookaheadInputStream_skip_4_0_Test

@@ -1,0 +1,184 @@
+package org.apache.tika.io;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.io.IOException;
+import java.io.InputStream;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class LookaheadInputStream_reset_8_0_Test {
+
+    @Mock
+    private InputStream mockStream;
+
+    private LookaheadInputStream lookaheadInputStream;
+
+    @BeforeEach
+    public void setUp() {
+        lookaheadInputStream = new LookaheadInputStream(mockStream, 10);
+    }
+
+    @Test
+    public void testReset() throws IOException {
+        // Arrange
+        int mark = 5;
+        lookaheadInputStream.mark(mark);
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(mark, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithNoMark() throws IOException {
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithNegativeMark() throws IOException {
+        // Arrange
+        int mark = -1;
+        lookaheadInputStream.mark(mark);
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithMarkGreaterThanBuffered() throws IOException {
+        // Arrange
+        int mark = 20;
+        lookaheadInputStream.mark(mark);
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithMarkEqualToBuffered() throws IOException {
+        // Arrange
+        int mark = 10;
+        lookaheadInputStream.mark(mark);
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(mark, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithMarkLessThanBuffered() throws IOException {
+        // Arrange
+        int mark = 5;
+        lookaheadInputStream.mark(mark);
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(mark, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithMarkEqualToPosition() throws IOException {
+        // Arrange
+        int mark = 5;
+        lookaheadInputStream.mark(mark);
+        lookaheadInputStream.position = mark;
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(mark, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithMarkLessThanPosition() throws IOException {
+        // Arrange
+        int mark = 3;
+        lookaheadInputStream.mark(mark);
+        lookaheadInputStream.position = 5;
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(mark, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithMarkGreaterThanPosition() throws IOException {
+        // Arrange
+        int mark = 7;
+        lookaheadInputStream.mark(mark);
+        lookaheadInputStream.position = 5;
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(mark, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithMarkEqualToMark() throws IOException {
+        // Arrange
+        int mark = 5;
+        lookaheadInputStream.mark(mark);
+        lookaheadInputStream.mark = mark;
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(mark, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithMarkLessThanMark() throws IOException {
+        // Arrange
+        int mark = 3;
+        lookaheadInputStream.mark(mark);
+        lookaheadInputStream.mark = 5;
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(mark, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    @Test
+    public void testResetWithMarkGreaterThanMark() throws IOException {
+        // Arrange
+        int mark = 7;
+        lookaheadInputStream.mark(mark);
+        lookaheadInputStream.mark = 5;
+        // Act
+        lookaheadInputStream.reset();
+        // Assert
+        assertEquals(mark, getPrivateField(lookaheadInputStream, "position"));
+    }
+
+    private Object getPrivateField(Object obj, String fieldName) throws Exception {
+        Field field = obj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(obj);
+    }
+}
+
+--------------------------------------------
+Error in LookaheadInputStream_reset_8_0_Test: line -1 : Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+Error in LookaheadInputStream_reset_8_0_Test: line -1 : Supported source version 'RELEASE_17' from annotation processor 'org.apache.tika.annotation.TikaComponentProcessor' less than -source '21'
+Error in LookaheadInputStream_reset_8_0_Test: line 93 : position has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_reset_8_0_Test: line 105 : position has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_reset_8_0_Test: line 117 : position has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_reset_8_0_Test: line 129 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_reset_8_0_Test: line 141 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_reset_8_0_Test: line 153 : mark has private access in org.apache.tika.io.LookaheadInputStream
+Error in LookaheadInputStream_reset_8_0_Test: line 161 : cannot find symbol
+  symbol:   class Field
+  location: class org.apache.tika.io.LookaheadInputStream_reset_8_0_Test

@@ -1,0 +1,249 @@
+package org.apache.tika.io;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.io.IOException;
+import java.io.InputStream;
+import org.mockito.*;
+import org.junit.jupiter.api.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+public class LookaheadInputStream_mark_7_0_Test {
+
+    @Mock
+    private InputStream mockStream;
+
+    private LookaheadInputStream lookaheadInputStream;
+
+    @BeforeEach
+    public void setUp() {
+        lookaheadInputStream = new LookaheadInputStream(mockStream, 10);
+    }
+
+    @Test
+    public void testMark() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithNegativeReadlimit() throws IOException {
+        // Arrange
+        int readlimit = -1;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithZeroReadlimit() throws IOException {
+        // Arrange
+        int readlimit = 0;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithPositiveReadlimit() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanBuffered() throws IOException {
+        // Arrange
+        int readlimit = 20;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBuffered() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanBuffered() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToPosition() throws IOException {
+        // Arrange
+        int readlimit = 0;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanPosition() throws IOException {
+        // Arrange
+        int readlimit = -5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanPosition() throws IOException {
+        // Arrange
+        int readlimit = 15;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBufferedAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanBufferedAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanBufferedAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 15;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBufferedAndPositionAndMark() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanBufferedAndPositionAndMark() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanBufferedAndPositionAndMark() throws IOException {
+        // Arrange
+        int readlimit = 15;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitEqualToBufferedAndPositionAndMarkAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 10;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitLessThanBufferedAndPositionAndMarkAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 5;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    @Test
+    public void testMarkWithReadlimitGreaterThanBufferedAndPositionAndMarkAndPosition() throws IOException {
+        // Arrange
+        int readlimit = 15;
+        // Act
+        lookaheadInputStream.mark(readlimit);
+        // Assert
+        assertEquals(0, getPrivateField(lookaheadInputStream, "mark"));
+    }
+
+    private Object getPrivateField(Object obj, String fieldName) throws Exception {
+        java.lang.reflect.Field field = obj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(obj);
+    }
+}
+
+--------------------------------------------
+Error in LookaheadInputStream_mark_7_0_Test: line -1 : Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+Error in LookaheadInputStream_mark_7_0_Test: line -1 : Supported source version 'RELEASE_17' from annotation processor 'org.apache.tika.annotation.TikaComponentProcessor' less than -source '21'
+Error in LookaheadInputStream_mark_7_0_Test: line 32 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 42 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 52 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 62 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 72 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 82 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 92 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 102 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 112 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 122 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 132 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 142 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 152 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 162 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 172 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 182 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 192 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 202 : unreported exception java.lang.Exception; must be caught or declared to be thrown
+Error in LookaheadInputStream_mark_7_0_Test: line 212 : unreported exception java.lang.Exception; must be caught or declared to be thrown
