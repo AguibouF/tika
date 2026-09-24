@@ -1,5 +1,12 @@
 # IFT3913 – Tâche 2 : génération de tests par IA et analyse de mutation
 
+**Auteurs :**
+
+| Nom | Matricule | GitHub |
+|---|---|---|
+| Aguibou FOFANA | 20332292 | [@AguibouF](https://github.com/AguibouF) |
+| Anas HARTI | 20223975 | [@ax23399](https://github.com/ax23399) |
+
 Cas d'étude : [Apache Tika](https://github.com/apache/tika), module `tika-core`.
 Classes étudiées :
 
@@ -152,7 +159,7 @@ mvn chatunitest:class -DselectClass=XPathParser
 ChatUniTest les écrit dans `tika-core/chatunitest-tests/org/apache/tika/sax/xpath/`, en dehors de `src/test/java`. Maven ne les compile donc pas tant qu'on ne les déplace pas. Trois fichiers ont été générés :
 
 | Fichier | Contenu |
-|---|---|
+|---|---|---|
 | `XPathParser_addPrefix_0_0_Test.java` | 1 test (`testAddPrefix`) |
 | `XPathParser_parse_1_0_Test.java` | 10 tests sur `parse` |
 | `XPathParser_Suite.java` | une suite qui regroupe les deux classes |
@@ -606,7 +613,7 @@ Résultat PIT avec les 4 classes de test : **32 mutants tués sur 32 (100 %)**, 
 #### A1. `testConstructorRegistersPrefix`
 
 | | |
-|---|---|
+|---|---|---|
 | **Mutant tué** | ligne 48, `VoidMethodCallMutator` : l'appel à `addPrefix(prefix, namespace)` est retiré du constructeur `XPathParser(String, String)` |
 | **Intention** | Vérifier que le constructeur à deux arguments enregistre bien le préfixe, comme un appel explicite à `addPrefix`. |
 | **Données** | `new XPathParser("prefix", NS)` puis `parse("/prefix:name")`. On utilise une instance **distincte** de celle du `setUp`, pour que le préfixe ne puisse venir que du constructeur. On emploie un nom préfixé, parce que la résolution d'un préfixe est le seul effet observable de `addPrefix`. |
@@ -615,7 +622,7 @@ Résultat PIT avec les 4 classes de test : **32 mutants tués sur 32 (100 %)**, 
 #### A2. `testDescendantNodeCompatibilitySyntax`
 
 | | |
-|---|---|
+|---|---|---|
 | **Mutant tué** | ligne 69, `RemoveConditionalMutator_EQUAL_ELSE` : la condition `xpath.equals("/descendant:node()")` est remplacée par `false` |
 | **Intention** | Vérifier que l'ancienne syntaxe avec un seul deux-points, gardée « for compatibility » selon le commentaire du code, est interprétée comme `/descendant::node()`. |
 | **Données** | La chaîne exacte `"/descendant:node()"`. Les tests originaux et ChatUniTest n'utilisent que la forme `::`. Seule cette variante exécute la seconde moitié du `||`. |
@@ -624,7 +631,7 @@ Résultat PIT avec les 4 classes de test : **32 mutants tués sur 32 (100 %)**, 
 #### A3. `testAttributeWithUnknownPrefixFails`
 
 | | |
-|---|---|
+|---|---|---|
 | **Mutant tué** | ligne 87, `NullReturnValsMutator` : `return Matcher.FAIL` est remplacé par `return null` dans la branche des attributs `/@...` |
 | **Intention** | Vérifier qu'un attribut dont le préfixe n'est pas enregistré donne un état d'échec, et non `null`. |
 | **Données** | `"/@unknown:name"` : une expression d'attribut syntaxiquement valide, dont le préfixe `unknown` n'est pas déclaré dans le `setUp`. C'est la seule façon d'atteindre le `else` de la branche attribut. |
@@ -633,7 +640,7 @@ Résultat PIT avec les 4 classes de test : **32 mutants tués sur 32 (100 %)**, 
 #### A4. `testExpressionWithoutLeadingSlashFails`
 
 | | |
-|---|---|
+|---|---|---|
 | **Mutant tué** | ligne 114, `NullReturnValsMutator` : le `return Matcher.FAIL` du `else` final est remplacé par `return null` |
 | **Intention** | Vérifier qu'une expression relative, qui ne commence pas par `/`, n'est pas supportée et donne l'état d'échec. |
 | **Données** | `"text()"` : proche d'une expression valide (`/text()`), mais sans la barre initiale. Elle n'est donc captée par aucune des branches précédentes et atteint le `else` final. |
@@ -652,7 +659,7 @@ Résultat PIT : **33 mutants tués sur 33 (100 %)**.
 #### B1. `testCloseRewindsToPositionAtConstruction`
 
 | | |
-|---|---|
+|---|---|---|
 | **Mutants tués** | ligne 67 (`if (stream != null)` → faux) et ligne 68 (appel `stream.mark(n)` retiré) |
 | **Intention** | Vérifier que `close()` ramène le flux sous-jacent à la position qu'il avait **au moment de la construction** du lookahead, et non au début du flux. |
 | **Données** | Flux `{'a','b','c'}` dont on consomme d'abord `'a'`, puis lookahead de taille 2, qui lit `'b'` et `'c'`. Avancer le flux **avant** de le décorer est indispensable : sur un flux neuf, la marque par défaut (0) coïncide avec la bonne position, et le mutant est invisible. C'est pour cela qu'il survit aux tests originaux. |
@@ -661,7 +668,7 @@ Résultat PIT : **33 mutants tués sur 33 (100 %)**.
 #### B2. `testLookaheadWithPartialReads`
 
 | | |
-|---|---|
+|---|---|---|
 | **Mutant tué** | ligne 82 : `buffer.length - buffered` → `buffer.length + buffered` (nombre d'octets demandés au flux) |
 | **Intention** | Vérifier que le lookahead fonctionne avec un flux qui renvoie ses données par morceaux, et que chaque remplissage ne demande que la place restante dans le buffer. |
 | **Données** | `OneByteAtATimeInputStream` sur `{'a','b','c'}`, avec une limite de 2. Le premier `read()` remplit 1 octet. Le second déclenche un **deuxième** remplissage avec `buffered = 1`. C'est le seul cas où la soustraction et l'addition diffèrent. |
@@ -670,7 +677,7 @@ Résultat PIT : **33 mutants tués sur 33 (100 %)**.
 #### B3. `testEndOfUnderlyingStreamRewindsIt`
 
 | | |
-|---|---|
+|---|---|---|
 | **Mutant tué** | ligne 86 : appel `close()` retiré quand le flux sous-jacent renvoie -1 |
 | **Intention** | Vérifier que lorsque le flux d'origine est plus court que la limite, il est rembobiné **dès** que sa fin est atteinte, sans attendre l'appel explicite à `close()`. |
 | **Données** | Flux `{'a','b'}` et limite de 3. Le flux s'épuise avant la limite, ce qui est la seule façon d'obtenir `n == -1` dans `fill()`. On n'appelle **pas** `close()`, contrairement à tous les tests existants, où cet appel masquait le mutant. |
@@ -679,7 +686,7 @@ Résultat PIT : **33 mutants tués sur 33 (100 %)**.
 #### B4. `testFullBufferDoesNotTouchUnderlyingStream`
 
 | | |
-|---|---|
+|---|---|---|
 | **Mutant tué** | ligne 81, `ConditionalsBoundaryMutator` : `buffered < buffer.length` → `buffered <= buffer.length` |
 | **Intention** | Vérifier qu'une fois la limite atteinte, le lookahead ne lit plus rien dans le flux sous-jacent. |
 | **Données** | Flux `{'a','b'}` et limite de **2** : le flux se termine **exactement** à la limite. Avec le mutant, un buffer plein déclenche `read(buf, 2, 0)`. Un `ByteArrayInputStream` épuisé renvoie alors -1, ce que la classe interprète comme la fin du flux, et elle le rembobine. Si le flux était plus long, ce même appel renverrait 0 et le mutant resterait invisible. |
@@ -688,7 +695,7 @@ Résultat PIT : **33 mutants tués sur 33 (100 %)**.
 #### B5. `testReadIntoArrayAfterSingleByteRead`
 
 | | |
-|---|---|
+|---|---|---|
 | **Mutants tués** | ligne 105 (`buffered - position` → `+`), ligne 106 (appel `System.arraycopy` retiré) et ligne 107 (`position += len` → `-=`) |
 | **Intention** | Vérifier que `read(byte[], off, len)` copie les octets disponibles **à partir de `off`**, en limite le nombre à ce qui reste dans le buffer, et avance la position. |
 | **Données** | Flux `{'a','b','c'}` et limite de 2. Un premier `read()` consomme `'a'`, pour que `position = 1` (sinon `buffered - position` et `buffered + position` coïncident). Puis `read(b, 1, 3)` dans un tableau de 4 octets. On demande 3 octets alors qu'il n'en reste qu'1, et on utilise un `off` non nul pour vérifier l'emplacement. |
@@ -786,7 +793,7 @@ mvn org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.io
 **Contenu d'un dossier de rapport**, par exemple `target/pit-reports/original/` :
 
 | Fichier | Contenu |
-|---|---|
+|---|---|---|
 | `index.html` | Résumé à ouvrir dans un navigateur : couverture de lignes, score de mutation et force des tests, par package puis par classe. |
 | `org.apache.tika.sax.xpath/XPathParser.java.html` | Code source annoté. Chaque ligne est colorée selon sa couverture, et la liste des mutants de la ligne indique pour chacun s'il est tué ou survivant. |
 | `mutations.xml` | Un élément `<mutation>` par mutant : ligne, méthode, opérateur, description, statut (`KILLED`, `SURVIVED`, `NO_COVERAGE`) et test qui l'a tué (`killingTest`). |
