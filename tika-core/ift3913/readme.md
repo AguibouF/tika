@@ -1,5 +1,12 @@
 # IFT3913 – Tâche 2 : génération de tests par IA et analyse de mutation
 
+**Auteurs :**
+
+| Nom | Matricule | GitHub |
+|---|---|---|
+| Aguibou FOFANA | 20332292 | [@AguibouF](https://github.com/AguibouF) |
+| Anas HARTI | 20223975 | [@ax23399](https://github.com/ax23399) |
+
 Cas d'étude : [Apache Tika](https://github.com/apache/tika), module `tika-core`.
 Classes étudiées :
 
@@ -59,7 +66,7 @@ Les méthodes ciblées sont `parse(String)`, qui contient toute la logique, et `
 
 ### 1.2 Classe B : `LookaheadInputStream`
 
-`org.apache.tika.io.LookaheadInputStream` est un flux qui permet de « regarder en avant » dans un `InputStream` : il lit au plus *n* octets dans un buffer interne, puis rembobine le flux d'origine à sa fermeture. Elle est conçue pour les détecteurs de type, qui doivent lire le début d'un document sans le consommer. Dans le dépôt, elle est utilisée par l'exemple `EncryptedPrescriptionDetector` (`tika-example`). Rapport JaCoCo de la classe, obtenu avec la suite de tests originale de `tika-core`, avant tout ajout de tests :
+`org.apache.tika.io.LookaheadInputStream` est une classe de flux qui permet de « regarder en avant » dans un `InputStream` : elle lit au plus *n* octets dans un buffer interne, puis rembobine le flux d'origine à sa fermeture. Elle est conçue pour les détecteurs de type, qui doivent lire le début d'un document sans le consommer. Dans le dépôt, elle est utilisée par l'exemple `EncryptedPrescriptionDetector` (`tika-example`). Rapport JaCoCo de la classe, obtenu avec la suite de tests originale de `tika-core`, avant tout ajout de tests :
 
 ![Couverture JaCoCo de LookaheadInputStream avant ajout de tests](img/jacoco-lookahead-avant.png)
 
@@ -223,7 +230,7 @@ Ce que montrent ces temps :
 - **Le LLM représente environ 90 % du temps.** Les 17 requêtes totalisent 43 min 7 s, entre 27 s et 5 min chacune.
 - **Les délais dépassés coûtent très cher.** Trois requêtes ont atteint la limite de 5 minutes (`SocketTimeoutException` côté ChatUniTest, HTTP 500 côté Ollama) sans rien produire, soit 15 minutes perdues. `mark` et `reset` représentent à elles seules **66 % du temps** (31 min 34 s), pour aucun test utilisable.
 - **Les requêtes s'allongent au fil du run.** Elles prennent entre 27 s et un peu plus de 2 min pour les 6 premières méthodes, puis entre 3 min 30 s et 5 min pour `mark` et `reset`, dès le tour 0. On n'a pas pu en établir la cause avec certitude.
-- **Coût d'un test utile.** 4 tests valides en 47 min 52 s, soit **environ 12 minutes par test retenu**. En comparaison, les 5 tests manuels de la [section 7.2](#72-classe-b--lookaheadinputstream), qui tuent 8 mutants que l'IA laissait vivants, ont demandé une analyse ciblée des mutants survivants.
+- **Coût d'un test utile.** 4 tests valides en 47 min 52 s, soit **environ 12 minutes par test retenu**. En comparaison, les 5 tests manuels de la [section 7.2](#72-classe-b--lookaheadinputstream), qui tuent les 8 mutants que l'IA laissait vivants, ont demandé une analyse ciblée de chacun d'eux.
 
 **Seules 2 méthodes sur 8 ont obtenu un test valide.** Les tentatives échouées sont archivées dans `tika-core/ift3913/chatunitest-lookahead-brut/tentatives-echouees/`. Les causes d'échec relevées sont les suivantes :
 
@@ -257,7 +264,7 @@ Les sous-sections 4.1 à 4.4 portent sur la classe A. La classe B est traitée e
 
 ### 4.1 Nature de l'oracle : comportement observable ou identité d'objet
 
-Les tests originaux interrogent le `Matcher` renvoyé sur ce qu'il fait. Les tests combinent les mêmes questions :
+Les tests originaux interrogent le `Matcher` renvoyé sur ce qu'il fait. Selon les cas, ils combinent les questions suivantes :
 
 - `matchesText()` ;
 - `matchesElement()` ;
@@ -310,7 +317,7 @@ Ces oracles tuent des mutants : inverser une condition ou confondre nom et espac
 | Cas négatifs | oui, systématiques | non |
 | Lignes couvertes (mesure PIT, sur la classe de test seule) | 80 % | 90 % (`/node()`, `///`, `//x` en plus) |
 | Couplage à l'implémentation | faible | fort (réflexion sur champ privé et méthode publique) |
-| Temps de génération | | ≈ 15 min pour le run final (plus ≈ 54 min de tentatives abandonnées) |
+| Temps de génération | — | ≈ 15 min pour le run final (plus ≈ 54 min de tentatives abandonnées) |
 | Score de mutation seul | 63 % | 88 %, **après** correction de 5 oracles |
 
 ### 4.5 Classe B : `LookaheadInputStream`
@@ -340,10 +347,10 @@ C'est ce second point qui exprime le contrat de la classe : regarder sans consom
 | Méthodes couvertes | `read()`, `skip`, `mark`, `reset`, `close` | `read(byte[],int,int)`, `markSupported` |
 | Type d'oracle | état, avec de vrais octets et le flux relu après `close()` | valeurs de retour et interactions avec un mock |
 | Oracles corrects sans intervention | 6 sur 6 | 4 sur 4 (sur les 2 méthodes réussies) |
-| Taux de réussite de la génération | | 2 méthodes sur 8 |
-| Temps de génération | | 47 min 52 s (≈ 12 min par test retenu) |
+| Taux de réussite de la génération | — | 2 méthodes sur 8 |
+| Temps de génération | — | 47 min 52 s (≈ 12 min par test retenu) |
 | Score de mutation seul | 58 % | 33 % |
-| Apport en combinaison | | +6 mutants (58 % → 76 %) |
+| Apport en combinaison | — | +6 mutants (58 % → 76 %) |
 
 Contrairement à la classe A, les tests générés ici sont **complémentaires** des tests originaux et ne les remplacent pas : ils couvrent exactement les deux méthodes que les tests originaux ignoraient. Mais leurs oracles sont trop faibles pour tuer les mutants qui touchent au contenu copié (voir la section 6.2).
 
@@ -392,10 +399,10 @@ On a ajouté le plugin `pitest-maven` à `tika-core/pom.xml`, avec le plugin JUn
 **Problème rencontré.** Lancé depuis un chemin qui contient des accents (`...\Qualité du logiciel et métriques\...`), PIT termine « avec succès », mais tous les mutants sont `NO_COVERAGE`. En mode verbeux (`-Dverbose=true`), le processus secondaire de PIT (le « minion ») affiche `ClassNotFoundException` pour chaque classe de test : il ne trouve pas `target/test-classes`. Ce sont bien les **accents** qui posent problème, et non les espaces : le même projet, atteint par un chemin avec des espaces mais sans accents, donne les bons résultats. Désactiver `useClasspathJar` ne change rien. On contourne le problème en créant un lecteur virtuel sans accents :
 
 ```bash
-subst V: "<chemin>\tika-main"
+subst V: "C:\chemin\vers\le-depot"
 ```
 
-On lance ensuite Maven depuis `V:\tika-core`.
+On lance ensuite Maven depuis `V:\tika-core` (voir la [section 9](#9-reproduire-les-résultats)).
 
 Pour analyser une seule classe à la fois, on restreint PIT en ligne de commande avec `-DtargetClasses=...` et `-DtargetTests=...` (voir la [section 9](#9-reproduire-les-résultats)).
 
@@ -432,7 +439,8 @@ Il y a 33 mutants :
 - 5 `RemoveConditional_EQUAL_ELSE` ;
 - 3 `RemoveConditional_ORDER_ELSE` ;
 - 3 `ConditionalsBoundary` ;
-- 7 `PrimitiveReturns` et `BooleanFalseReturnVals`.
+- 6 `PrimitiveReturns` ;
+- 1 `BooleanFalseReturnVals`.
 
 | Ensemble de tests | Lignes couvertes | Tués | Survivants | Non couverts | **Score de mutation** | Force des tests |
 |---|---|---|---|---|---|---|
@@ -449,38 +457,38 @@ Il y a 33 mutants :
 
 | Ligne | Opérateur | Mutation | Original | ChatUniTest (test tueur) | Combiné |
 |---|---|---|---|---|---|
-| 48 | VoidMethodCallMutator | removed call to addPrefix | NO_COVERAGE | NO_COVERAGE | NO_COVERAGE |
-| 64 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseText) | KILLED |
-| 65 | NullReturnValsMutator | replaced return value with null | KILLED | KILLED (testParseText) | KILLED |
-| 66 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | SURVIVED | KILLED (testParseNode) | KILLED |
-| 67 | NullReturnValsMutator | replaced return value with null | NO_COVERAGE | KILLED (testParseNode) | KILLED |
-| 68 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseFail) | KILLED |
-| 69 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | SURVIVED | SURVIVED | SURVIVED |
-| 70 | NullReturnValsMutator | replaced return value with null | NO_COVERAGE | KILLED (testParseDescendantNode) | KILLED |
-| 72 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseAttribute) | KILLED |
-| 73 | NullReturnValsMutator | replaced return value with null | KILLED | KILLED (testParseAttribute) | KILLED |
-| 74 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseEmpty) | KILLED |
-| 75 | NullReturnValsMutator | replaced return value with null | KILLED | KILLED (testParseEmpty) | KILLED |
-| 76 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseNamedAttribute) | KILLED |
-| 80 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseNamedAttribute) | KILLED |
-| 82 | MathMutator | Replaced integer addition with subtraction | KILLED | KILLED (testParseNamedAttribute) | KILLED |
-| 84 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseNamedAttribute) | KILLED |
-| 85 | NullReturnValsMutator | replaced return value with null | KILLED | KILLED (testParseNamedAttribute) | KILLED |
-| 87 | NullReturnValsMutator | replaced return value with null | NO_COVERAGE | NO_COVERAGE | NO_COVERAGE |
-| 89 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseChild) | KILLED |
-| 90 | NullReturnValsMutator | replaced return value with null | KILLED | KILLED (testParseChild) | KILLED |
-| 91 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | SURVIVED | KILLED (testParseFail) | KILLED |
-| 92 | NullReturnValsMutator | replaced return value with null | NO_COVERAGE | KILLED (testParseFail) | KILLED |
-| 93 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | SURVIVED | KILLED (testParseSubtree) | KILLED |
-| 94 | NullReturnValsMutator | replaced return value with null | NO_COVERAGE | KILLED (testParseSubtree) | KILLED |
-| 95 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseNamedElement) | KILLED |
-| 97 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseSubtree) | KILLED |
-| 103 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseNamedElement) | KILLED |
-| 105 | MathMutator | Replaced integer addition with subtraction | KILLED | KILLED (testParseNamedElement) | KILLED |
-| 107 | RemoveConditionalMutator_EQUAL_ELSE | removed conditional - replaced equality check with false | KILLED | KILLED (testParseNamedElement) | KILLED |
-| 108 | NullReturnValsMutator | replaced return value with null | KILLED | KILLED (testParseNamedElement) | KILLED |
-| 111 | NullReturnValsMutator | replaced return value with null | NO_COVERAGE | KILLED (testParseSubtree) | KILLED |
-| 114 | NullReturnValsMutator | replaced return value with null | NO_COVERAGE | NO_COVERAGE | NO_COVERAGE |
+| 48 | VoidMethodCallMutator | appel `addPrefix` retiré | NO_COVERAGE | NO_COVERAGE | NO_COVERAGE |
+| 64 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseText) | KILLED |
+| 65 | NullReturnValsMutator | valeur de retour remplacée par `null` | KILLED | KILLED (testParseText) | KILLED |
+| 66 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | SURVIVED | KILLED (testParseNode) | KILLED |
+| 67 | NullReturnValsMutator | valeur de retour remplacée par `null` | NO_COVERAGE | KILLED (testParseNode) | KILLED |
+| 68 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseFail) | KILLED |
+| 69 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | SURVIVED | SURVIVED | SURVIVED |
+| 70 | NullReturnValsMutator | valeur de retour remplacée par `null` | NO_COVERAGE | KILLED (testParseDescendantNode) | KILLED |
+| 72 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseAttribute) | KILLED |
+| 73 | NullReturnValsMutator | valeur de retour remplacée par `null` | KILLED | KILLED (testParseAttribute) | KILLED |
+| 74 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseEmpty) | KILLED |
+| 75 | NullReturnValsMutator | valeur de retour remplacée par `null` | KILLED | KILLED (testParseEmpty) | KILLED |
+| 76 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseNamedAttribute) | KILLED |
+| 80 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseNamedAttribute) | KILLED |
+| 82 | MathMutator | `+` remplacé par `-` | KILLED | KILLED (testParseNamedAttribute) | KILLED |
+| 84 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseNamedAttribute) | KILLED |
+| 85 | NullReturnValsMutator | valeur de retour remplacée par `null` | KILLED | KILLED (testParseNamedAttribute) | KILLED |
+| 87 | NullReturnValsMutator | valeur de retour remplacée par `null` | NO_COVERAGE | NO_COVERAGE | NO_COVERAGE |
+| 89 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseChild) | KILLED |
+| 90 | NullReturnValsMutator | valeur de retour remplacée par `null` | KILLED | KILLED (testParseChild) | KILLED |
+| 91 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | SURVIVED | KILLED (testParseFail) | KILLED |
+| 92 | NullReturnValsMutator | valeur de retour remplacée par `null` | NO_COVERAGE | KILLED (testParseFail) | KILLED |
+| 93 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | SURVIVED | KILLED (testParseSubtree) | KILLED |
+| 94 | NullReturnValsMutator | valeur de retour remplacée par `null` | NO_COVERAGE | KILLED (testParseSubtree) | KILLED |
+| 95 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseNamedElement) | KILLED |
+| 97 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseSubtree) | KILLED |
+| 103 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseNamedElement) | KILLED |
+| 105 | MathMutator | `+` remplacé par `-` | KILLED | KILLED (testParseNamedElement) | KILLED |
+| 107 | RemoveConditionalMutator_EQUAL_ELSE | condition remplacée par `false` | KILLED | KILLED (testParseNamedElement) | KILLED |
+| 108 | NullReturnValsMutator | valeur de retour remplacée par `null` | KILLED | KILLED (testParseNamedElement) | KILLED |
+| 111 | NullReturnValsMutator | valeur de retour remplacée par `null` | NO_COVERAGE | KILLED (testParseSubtree) | KILLED |
+| 114 | NullReturnValsMutator | valeur de retour remplacée par `null` | NO_COVERAGE | NO_COVERAGE | NO_COVERAGE |
 
 #### Classe B : `LookaheadInputStream`
 
@@ -713,8 +721,6 @@ En local, `mvn test` passe avec Checkstyle, Spotless et RAT activés : **37 test
 
 ## 9. Reproduire les résultats
 
-Les options `-D` sont entre guillemets doubles : sinon PowerShell coupe `-Dsurefire.failIfNoSpecifiedTests=false` au premier point. Le `pom.xml` cible les deux classes : on précise donc `-DtargetClasses` pour analyser une classe à la fois.
-
 **Toutes les commandes de cette section se lancent depuis le dossier `tika-core`, et non depuis la racine du dépôt.** Lancé depuis la racine, PIT s'applique aux 124 modules de Tika et échoue dès le module `tika-annotation-processor` avec « No mutations found ». Depuis la racine du dépôt :
 
 ```bash
@@ -725,11 +731,13 @@ cd tika-core
 
 ```bash
 # à refaire après chaque redémarrage de Windows ; remplacer le chemin par celui du dépôt
-subst V: "C:\chemin\vers\tika-main"
+subst V: "C:\chemin\vers\le-depot"
 cd V:\tika-core
 ```
 
 Les commandes ci-dessous se lancent alors depuis `V:\tika-core`.
+
+Les options `-D` sont entre guillemets doubles : sinon PowerShell coupe `-Dsurefire.failIfNoSpecifiedTests=false` au premier point. Le `pom.xml` cible les deux classes : on précise donc `-DtargetClasses` pour analyser une classe à la fois.
 
 Classe A :
 
@@ -783,17 +791,13 @@ mvn org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=org.apache.tika.io
 - `<timestampedReports>false</timestampedReports>` : le dossier ne porte pas de date. Relancer une commande avec le même label **écrase** le rapport précédent.
 - `<outputFormats>` : HTML, XML et CSV. `<exportLineCoverage>true</exportLineCoverage>` exporte en plus la couverture de lignes.
 
-**Contenu d'un dossier de rapport**, par exemple `target/pit-reports/original/` :
+**Contenu d'un rapport.** Chaque dossier `target/pit-reports/<label>/` contient :
 
-| Fichier | Contenu |
-|---|---|
-| `index.html` | Résumé à ouvrir dans un navigateur : couverture de lignes, score de mutation et force des tests, par package puis par classe. |
-| `org.apache.tika.sax.xpath/XPathParser.java.html` | Code source annoté. Chaque ligne est colorée selon sa couverture, et la liste des mutants de la ligne indique pour chacun s'il est tué ou survivant. |
-| `mutations.xml` | Un élément `<mutation>` par mutant : ligne, méthode, opérateur, description, statut (`KILLED`, `SURVIVED`, `NO_COVERAGE`) et test qui l'a tué (`killingTest`). |
-| `mutations.csv` | Les mêmes informations sous forme de tableau, une ligne par mutant. |
-| `linecoverage.xml` | Les tests qui couvrent chaque bloc de code. |
+- **`index.html`** : la page à ouvrir dans un navigateur. Elle résume la couverture de lignes, le score de mutation et la force des tests. En cliquant sur la classe, on voit son code source : les lignes couvertes par les tests sont en vert, les lignes non couvertes en rouge, et chaque ligne est suivie de la liste de ses mutants avec leur résultat.
+- **`mutations.xml`** et **`mutations.csv`** : la liste de tous les mutants, avec pour chacun la ligne de code, le type de mutation, le résultat (`KILLED`, `SURVIVED` ou `NO_COVERAGE`) et le test qui l'a tué. Les tableaux des sections 5.3 et 6 ont été construits à partir de ces fichiers.
+- **`linecoverage.xml`** : quels tests exécutent quelles lignes. PIT s'en sert en interne ; il est rarement utile à la lecture.
 
-Les résumés du terminal (`Generated 32 mutations Killed 20 (63%)`, `Line Coverage ... 40/50 (80%)`) donnent les chiffres des tableaux de la section 5.2. Les tableaux par mutant de la section 5.3 et les tests tueurs cités à la section 6 ont été extraits des fichiers `mutations.xml` des différents labels.
+Pour consulter un rapport, il suffit d'ouvrir par exemple `tika-core/target/pit-reports/original/index.html` dans un navigateur. Les chiffres affichés à la fin de chaque commande dans le terminal (par exemple `Generated 32 mutations Killed 20 (63%)` et `Line Coverage ... 40/50 (80%)`) sont ceux reportés dans les tableaux de la section 5.2.
 
 **Remarques.**
 
