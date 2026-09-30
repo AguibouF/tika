@@ -718,6 +718,21 @@ mvn install -B -pl tika-core -am "-Dtest=org.apache.tika.sax.xpath.*Test,org.apa
 - Le build complet de ces modules s'exécute : compilation, Checkstyle, Spotless, forbiddenapis. Les nouveaux tests doivent donc respecter les règles de style du projet, et pas seulement passer.
 - `-Dtest=...` limite l'exécution aux 8 classes de test des deux classes étudiées.
 
+### Workflows de Tika désactivés
+
+Le dépôt de Tika contient 8 autres workflows. Sur le fork, ils se sont lancés à chaque push et à chaque pull request, en même temps que le nôtre. Pendant plusieurs minutes, notre workflow est resté bloqué avec le message « All GitHub-hosted runners with label [ubuntu-latest] are busy » : les builds de Tika occupaient toutes les machines disponibles pour le compte. On les a donc désactivés dans l'onglet Actions (**Disable workflow**). Seul `tache2 tests` reste actif.
+
+| Workflow | Ce qu'il fait | Raison de la désactivation |
+|---|---|---|
+| `main jdk17 build` | build complet des 124 modules, `apache-rat:check`, javadoc, puis tests de bout en bout | Long (jusqu'à 60 + 30 min). Il **échoue** sur notre fork à l'étape `apache-rat:check` de `tika-core` : 25 fichiers sans en-tête de licence. Ce sont les archives brutes de ChatUniTest (`tika-core/chatunitest-tests/` et `tika-core/ift3913/chatunitest-lookahead-brut/`), conservées telles que générées pour documenter la [section 3](#3-génération-des-tests). Les tests réellement exécutés, dans `src/test/java`, ont tous l'en-tête (intervention n° 3 de la section 3). |
+| `main jdk21 build`, `main jdk25 build` | même build complet avec Java 21 et Java 25 | Long (jusqu'à 60 min chacun) et sans rapport avec ce travail. Il occupe des machines. |
+| `main jdk17 windows build`, `main jdk17 windows build (multi-locale)` | build complet sous Windows, dont une variante avec plusieurs langues système | Ce sont les plus longs. Ils ont occupé des machines pendant toute la durée du blocage. |
+| `no split packages` | vérifie qu'aucun package Java n'est réparti sur plusieurs modules | Il réussit, mais ne concerne pas ce travail. Il occupe une machine à chaque push. |
+| `Docker snapshot` | construit et publie les images Docker de `tika-server` et `tika-grpc` à chaque push sur `main` | Il a besoin des secrets `DOCKERHUB_USER` et `DOCKERHUB_TOKEN` du projet Apache, absents du fork. Il ne peut donc pas aboutir. |
+| `Docker release` | publie les images Docker d'une version officielle, sur un tag Git | Même besoin des secrets Docker Hub. Ne concerne que les versions publiées de Tika. |
+
+Ces workflows servent à valider Tika dans son ensemble, pour le projet Apache. Les désactiver ne change rien à ce qui est vérifié pour la tâche 2 : notre workflow compile `tika-core`, lance Checkstyle, Spotless et forbiddenapis, et exécute les 37 tests des deux classes étudiées.
+
 Nouveaux tests :
 
 | Classe de test | Package | Tests | Origine |
