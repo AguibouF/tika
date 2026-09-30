@@ -704,6 +704,8 @@ Résultat PIT : **33 mutants tués sur 33 (100 %)**.
 
 Workflow : [`.github/workflows/tache2.yml`](.github/workflows/tache2.yml). Exécutions : [onglet Actions du dépôt](https://github.com/AguibouF/tika/actions/workflows/tache2.yml).
 
+**Exécution réussie sur `main` : [run 36669714271](https://github.com/AguibouF/tika/actions/runs/36669714271)** (job `tests` : ✅ success, 37 tests sur 37).
+
 Le workflow se déclenche à chaque `push` sur `main` ou `tache2`, à chaque pull request vers `main`, et peut aussi se lancer à la main (`workflow_dispatch`). Il installe le JDK 17 (Temurin), puis lance :
 
 ```bash
