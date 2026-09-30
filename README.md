@@ -142,8 +142,6 @@ Choix de configuration :
 mvn chatunitest:class -DselectClass=XPathParser
 ```
 
-<!-- TODO : vérifier que c'est bien la commande utilisée (class ou method). -->
-
 **Temps de génération.** Le dossier de travail de ChatUniTest pour ce run a été écrasé par le run de la classe B. Les temps ci-dessous sont donc reconstitués à partir du journal du serveur Ollama (`%LOCALAPPDATA%\Ollama\server.log`), qui enregistre l'heure de fin et la durée de chaque requête `POST /v1/chat/completions`.
 
 | Phase | Durée | Requêtes au LLM |
@@ -704,7 +702,17 @@ Résultat PIT : **33 mutants tués sur 33 (100 %)**.
 
 ## 8. Exécution dans la GitHub Action
 
-<!-- TODO : lien vers le workflow et vers une exécution réussie. -->
+Workflow : [`.github/workflows/tache2.yml`](.github/workflows/tache2.yml). Exécutions : [onglet Actions du dépôt](https://github.com/AguibouF/tika/actions/workflows/tache2.yml).
+
+Le workflow se déclenche à chaque `push` sur `main` ou `tache2`, à chaque pull request vers `main`, et peut aussi se lancer à la main (`workflow_dispatch`). Il installe le JDK 17 (Temurin), puis lance :
+
+```bash
+mvn install -B -pl tika-core -am "-Dtest=org.apache.tika.sax.xpath.*Test,org.apache.tika.io.LookaheadInputStream*Test" "-Dsurefire.failIfNoSpecifiedTests=false"
+```
+
+- `-pl tika-core -am` ne construit que `tika-core` et les modules dont il dépend (`tika-parent`, `tika-annotation-processor`), au lieu des 124 modules de Tika. Les workflows d'origine de Tika construisent tout le projet et lancent aussi des tests de bout en bout, ce qui prend beaucoup plus de temps et peut échouer pour des raisons sans rapport avec ce travail.
+- Le build complet de ces modules s'exécute : compilation, Checkstyle, Spotless, forbiddenapis. Les nouveaux tests doivent donc respecter les règles de style du projet, et pas seulement passer.
+- `-Dtest=...` limite l'exécution aux 8 classes de test des deux classes étudiées.
 
 Nouveaux tests :
 
@@ -717,7 +725,7 @@ Nouveaux tests :
 | `LookaheadInputStream_markSupported_6_0_Test` | `io` | 1 | généré |
 | `LookaheadInputStreamMutantsTest` | `io` | 5 | ajouté manuellement |
 
-En local, `mvn test` passe avec Checkstyle, Spotless et RAT activés : **37 tests sur 37** pour les deux classes (en comptant les 13 tests originaux), et `BUILD SUCCESS`.
+En local, la commande du workflow passe à partir d'un dépôt Maven vide (comme dans la CI) : **37 tests sur 37** pour les deux classes (en comptant les 13 tests originaux), et `BUILD SUCCESS`.
 
 ## 9. Reproduire les résultats
 
@@ -735,7 +743,7 @@ subst V: "C:\chemin\vers\le-depot"
 cd V:\tika-core
 ```
 
-Les commandes ci-dessous se lancent alors depuis `V:\tika-core`.
+Les commandes ci-dessous se lancent alors depuis `V:\tika-core`. `subst` n'existe que sous Windows. Sous Linux ou macOS, les commandes `mvn` sont les mêmes. Si le chemin contient des accents, on peut cloner le dépôt dans un dossier sans accents.
 
 Les options `-D` sont entre guillemets doubles : sinon PowerShell coupe `-Dsurefire.failIfNoSpecifiedTests=false` au premier point. Le `pom.xml` cible les deux classes : on précise donc `-DtargetClasses` pour analyser une classe à la fois.
 
