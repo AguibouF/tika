@@ -18,7 +18,7 @@
 # IFT3913 - Tâche 2 : exécute les tests originaux, générés (ChatUniTest) et
 # manuels de XPathParser et LookaheadInputStream. Ne construit que tika-core
 # et ses dépendances, pas les 124 modules de Tika.
-name: IFT3913 tache 2 tests
+name: tache2 tests
 
 on:
   push:
