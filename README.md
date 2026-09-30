@@ -223,6 +223,8 @@ La génération a duré **47 min 52 s** au total, sur un modèle local (`codeqwe
 | `reset()` | échec à la compilation | échec à la compilation (2 délais dépassés) | ❌ | 18 min 44 s | 4 |
 | **Total** | | | **2 méthodes sur 8** | **47 min 52 s** | **17** |
 
+Le total est mesuré du lancement de Maven à la fin du run. La somme des lignes donne 47 min 54 s : l'écart de 2 s vient des arrondis à la seconde des durées par méthode.
+
 Ce que montrent ces temps :
 
 - **Le LLM représente environ 90 % du temps.** Les 17 requêtes totalisent 43 min 7 s, entre 27 s et 5 min chacune.
@@ -290,7 +292,7 @@ Ces oracles tuent des mutants : inverser une condition ou confondre nom et espac
 
 **Les 5 tests générés qui passaient sans modification** sont des vérifications quasi tautologiques. Par exemple, « `parse("/text()")` doit renvoyer `TextMatcher.INSTANCE` » recopie littéralement la ligne correspondante du `if`, sans rien vérifier du comportement du matcher.
 
-- Ils ont une vraie valeur de **couverture**. Ils atteignent des branches que les tests originaux ne visitent pas : `/node()` et `///`.
+- Ils ont une vraie valeur de **couverture**. Ils atteignent des branches que les tests originaux ne visitent pas : `/node()`, `/descendant::node()`, `///` et `//x`.
 - Ils ont aussi une vraie valeur de **détection de mutants**, puisqu'ils vérifient l'identité exacte du résultat (voir la [section 6](#6-mutants-détectés-par-les-tests-générés)).
 - Mais ils ne vérifient rien au-delà de cette identité. Si `TextMatcher.matchesText()` était cassé, ils ne le verraient pas.
 
@@ -553,7 +555,7 @@ Les 28 mutants tués par les tests générés se répartissent en deux groupes :
 | Lignes | Test généré tueur | Mécanisme |
 |---|---|---|
 | 64, 65 (`/text()`), 72, 73 (`/@*`), 74, 75 (chaîne vide) | `testParseText`, `testParseAttribute`, `testParseEmpty` | Oracles singleton. Sans la condition, l'expression tombe dans une autre branche qui renvoie `FAIL`. Avec `return null`, `assertEquals(X.INSTANCE, null)` échoue. |
-| 68 | `testParseFail` | Le mutant fait entrer toute expression qui arrive à la ligne 68 dans la branche `/descendant::node()`. `///` renvoie alors un `CompositeMatcher` au lieu de `FAIL`. |
+| 68 | `testParseFail` | Le mutant fait entrer toute expression qui arrive à la ligne 68 dans la branche `/descendant::node()`. `///` renvoie alors un `CompositeMatcher` au lieu de `FAIL`. PIT décrit ce mutant comme « condition remplacée par `false` », mais il agit sur le bytecode : le premier opérande du `\|\|` y devient un saut vers le corps du `if`, et forcer ce saut revient à remplacer toute la condition par `true`. |
 | 76, 80, 84, 85 | `testParseNamedAttribute` | Sans la branche `/@`, le préfixe devient `@ns`, qui est inconnu. Sans la détection du `:`, le préfixe devient `null`, qui n'est pas enregistré. Les deux cas renvoient `FAIL`, donc `assertInstanceOf(NamedAttributeMatcher)` échoue. Avec `return null`, l'oracle échoue aussi. |
 | 82 (`colon + 1` devient `colon - 1`) | `testParseNamedAttribute` | Le nom extrait devient `s:name`, donc `matchesAttribute(ns, "name")` est faux. |
 | 89, 90 (`/*`) | `testParseChild` | Sans la branche `/*`, `*` est lu comme un nom sans préfixe et donne `FAIL`. Avec `return null`, `assertInstanceOf` échoue. |
@@ -625,7 +627,7 @@ Résultat PIT avec les 4 classes de test : **32 mutants tués sur 32 (100 %)**, 
 | **Mutant tué** | ligne 69, `RemoveConditionalMutator_EQUAL_ELSE` : la condition `xpath.equals("/descendant:node()")` est remplacée par `false` |
 | **Intention** | Vérifier que l'ancienne syntaxe avec un seul deux-points, gardée « for compatibility » selon le commentaire du code, est interprétée comme `/descendant::node()`. |
 | **Données** | La chaîne exacte `"/descendant:node()"`. Les tests originaux et ChatUniTest n'utilisent que la forme `::`. Seule cette variante exécute la seconde moitié du `||`. |
-| **Oracle** | Même comportement attendu que `/descendant::node()`, déjà testé dans `XPathParserTest.testDescendantNode` : le nœud courant correspond au texte mais pas à l'élément, et tout descendant, à n'importe quelle profondeur, correspond à l'élément. Avec le mutant, l'expression tombe dans la branche `startsWith("/")`. Le nom `descendant:node()` y est lu comme le préfixe `descendant`, qui n'est pas enregistré, donc `parse` renvoie `FAIL` et `matchesText()` est faux. |
+| **Oracle** | Même comportement attendu que `/descendant::node()`, vérifié par le test généré `testParseDescendantNode` (oracle corrigé, [section 3.1](#31-classe-a--xpathparser)) : le nœud courant correspond au texte mais pas à l'élément, et tout descendant, à n'importe quelle profondeur, correspond à l'élément. Avec le mutant, l'expression tombe dans la branche `startsWith("/")`. Le nom `descendant:node()` y est lu comme le préfixe `descendant`, qui n'est pas enregistré, donc `parse` renvoie `FAIL` et `matchesText()` est faux. |
 
 #### A3. `testAttributeWithUnknownPrefixFails`
 
@@ -737,7 +739,7 @@ En local, la commande du workflow passe à partir d'un dépôt Maven vide (comme
 cd tika-core
 ```
 
-**Seulement si le chemin du dépôt contient des accents.** Les commandes `mvn test` fonctionnent depuis n'importe quel dossier, mais **PIT ne fonctionne pas si le chemin contient des accents** (voir la section 5.1). Il termine alors par `BUILD SUCCESS`, mais avec `Ran 0 tests` et 0 mutant tué. Dans ce cas, avant de lancer PIT, on crée un lecteur virtuel sans accents et on se place dedans :
+**Seulement si le chemin du dépôt contient des accents.** Les commandes `mvn test` fonctionnent même si le chemin contient des accents, mais **PIT ne fonctionne pas si le chemin contient des accents** (voir la section 5.1). Il termine alors par `BUILD SUCCESS`, mais avec `Ran 0 tests` et 0 mutant tué. Dans ce cas, avant de lancer PIT, on crée un lecteur virtuel sans accents et on se place dedans :
 
 ```bash
 # à refaire après chaque redémarrage de Windows ; remplacer le chemin par celui du dépôt
@@ -818,4 +820,4 @@ Pour consulter un rapport, il suffit d'ouvrir par exemple `tika-core/target/pit-
 
 <img src="tika-core/ift3913/img/etiquette-assiste-par-ia.png" alt="Assisté par l'IA" width="220">
 
-Outre ChatUniTest (avec `codeqwen:v1.5-chat`), qui est l'objet même du travail, un assistant IA conversationnel (Claude, d'Anthropic) a servi à structurer ce document à partir des notes de l'équipe. Tous les résultats chiffrés proviennent d'exécutions réelles des outils.
+Outre ChatUniTest (avec `codeqwen:v1.5-chat`), qui est l'objet même du travail, un assistant IA conversationnel (Claude, d'Anthropic) a servi à structurer ce document à partir des notes de l'équipe, ainsi qu'à écrire le workflow GitHub Actions (`.github/workflows/tache2.yml`) et la section 8 qui le décrit. Tous les résultats chiffrés proviennent d'exécutions réelles des outils.
