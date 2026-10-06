@@ -80,7 +80,7 @@ public class LookaheadInputStreamMutantsTest {
     }
 
     /**
-     * Mutants ligne 81 (limite) et ligne 86 : quand le flux sous-jacent est épuisé,
+     * Mutant ligne 86 : quand le flux sous-jacent est épuisé avant la limite,
      * il est rembobiné automatiquement, sans attendre close().
      */
     @Test
