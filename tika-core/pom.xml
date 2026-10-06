@@ -325,11 +325,15 @@
       </plugin>
 
       <!-- IFT3913 : analyse de mutation (PIT) sur les classes choisies.
-           Lancer : mvn test-compile org.pitest:pitest-maven:mutationCoverage
-                      -DtargetTests=<classes de test séparées par des virgules>
-                      -Dpit.label=<original|chatunitest|combine>
-           ATTENTION : à lancer depuis un chemin SANS accents (lecteur subst T:),
-           sinon le JVM enfant de PIT ne trouve pas les classes de test. -->
+           Lancer depuis le dossier tika-core (pas depuis la racine) :
+             mvn test-compile org.pitest:pitest-maven:mutationCoverage
+                 -DtargetClasses=<classe à muter>
+                 -DtargetTests=<classes de test séparées par des virgules>
+                 -Dpit.label=<original|chatunitest|combine|complet|lookahead-...>
+           Commandes complètes : section 9 du README à la racine du dépôt.
+           ATTENTION : à lancer depuis un chemin SANS accents (sous Windows,
+           lecteur subst V:), sinon le JVM enfant de PIT ne trouve pas les
+           classes de test. -->
       <plugin>
         <groupId>org.pitest</groupId>
         <artifactId>pitest-maven</artifactId>
