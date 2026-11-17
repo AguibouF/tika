@@ -1,0 +1,84 @@
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 335 files tracked by git with 7 Code rules:
+  Scanning 331 files with 7 java rules.
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 7 (7 blocking)
+ • Rules run: 7
+ • Targets scanned: 331
+ • Parsed lines: ~100.0%
+ • No ignore information available
+Ran 7 rules on 331 files: 7 findings.
+                   
+                   
+┌─────────────────┐
+│ 7 Code Findings │
+└─────────────────┘
+                                                                           
+    tika-core/src/main/java/org/apache/tika/config/InsecureCredentials.java
+   ❯❯❱ semgrep.ift3913-hardcoded-password
+          ❰❰ Blocking ❱❱
+          Mot de passe codé en dur détecté.
+                                           
+           25┆ private static final String DATABASE_PASSWORD =
+           26┆         "DemoPassword123!";
+                                                                            
+    tika-core/src/main/java/org/apache/tika/config/InsecureDeserializer.java
+   ❯❯❱ semgrep.ift3913-insecure-deserialization
+          ❰❰ Blocking ❱❱
+          Désérialisation Java potentiellement dangereuse : vérifier la provenance des données et filtrer les
+          classes autorisées.                                                                                
+                                                                                                             
+           35┆ return input.readObject();
+                                                                        
+    tika-core/src/main/java/org/apache/tika/config/InsecureSqlQuery.java
+   ❯❯❱ semgrep.ift3913-sql-injection
+          ❰❰ Blocking ❱❱
+          Injection SQL possible : requête construite par concaténation. Utiliser PreparedStatement.
+                                                                                                    
+           33┆ String query = "SELECT * FROM users WHERE username = '" +
+           34┆         username + "'";
+           35┆
+           36┆ Statement statement = connection.createStatement();
+           37┆ return statement.executeQuery(query);
+                                                                           
+    tika-core/src/main/java/org/apache/tika/config/InsecureTlsVerifier.java
+   ❯❯❱ semgrep.ift3913-insecure-tls
+          ❰❰ Blocking ❱❱
+          Vérification TLS non sécurisée : le HostnameVerifier accepte tous les noms d'hôte.
+                                                                                            
+           29┆ return (String hostname, SSLSession session) -> true;
+                                                                              
+    tika-core/src/main/java/org/apache/tika/config/InsecureTokenGenerator.java
+   ❯❯❱ semgrep.ift3913-insecure-session-token
+          ❰❰ Blocking ❱❱
+          Utilisation de java.util.Random pour générer un jeton de session. Utiliser SecureRandom.
+                                                                                                  
+           27┆ public String generateSessionToken() {
+           28┆     Random random = new Random();
+           29┆     return Long.toHexString(random.nextLong());
+           30┆ }
+                                                                                
+    tika-core/src/main/java/org/apache/tika/digest/InsecurePasswordVerifier.java
+   ❯❯❱ semgrep.ift3913-weak-password-hash
+          ❰❰ Blocking ❱❱
+          MD5 détecté : algorithme inadapté au stockage des mots de passe.
+                                                                          
+           12┆ MessageDigest digest = MessageDigest.getInstance("MD5");
+                                                                      
+    tika-core/src/main/java/org/apache/tika/io/InsecureFileReader.java
+   ❯❯❱ semgrep.ift3913-path-traversal
+          ❰❰ Blocking ❱❱
+          Path Traversal possible : chemin utilisateur utilisé sans validation du répertoire autorisé.
+                                                                                                      
+           36┆ Path requestedFile = baseDirectory.resolve(userInput);
+           37┆ return Files.readString(requestedFile);
+

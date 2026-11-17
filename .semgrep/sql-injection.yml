@@ -1,0 +1,11 @@
+rules:
+  - id: ift3913-sql-injection
+    languages: [java]
+    severity: ERROR
+    message: "Injection SQL possible : requête construite par concaténation. Utiliser PreparedStatement."
+    pattern: |
+      String $QUERY = $PREFIX + $INPUT + $SUFFIX;
+      ...
+      Statement $STMT = $CONNECTION.createStatement();
+      ...
+      $STMT.executeQuery($QUERY);

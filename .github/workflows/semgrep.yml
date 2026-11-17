@@ -1,0 +1,23 @@
+name: Test Semgrep - Tache 3
+
+on:
+  push:
+    branches: [tache3]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v6
+
+      - name: Executer les sept regles
+        run: semgrep scan --config .semgrep --text tika-core/src/main/java
