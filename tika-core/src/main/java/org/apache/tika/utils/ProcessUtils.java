@@ -51,6 +51,16 @@ public class ProcessUtils {
     }
 
     /**
+     * IFT3913 tâche 3 - vulnérabilité volontaire (CWE-78, injection de commande).
+     * La commande passe par un shell et l'argument y est concaténé sans échappement :
+     * un nom de fichier comme {@code "a.pdf; rm -rf ~"} exécute une seconde commande.
+     * Il faudrait passer chaque argument séparément à ProcessBuilder, sans shell.
+     */
+    public static Process startShellCommand(String program, String argument) throws IOException {
+        return new ProcessBuilder("sh", "-c", program + " " + argument).start();
+    }
+
+    /**
      * This should correctly put double-quotes around an argument if
      * ProcessBuilder doesn't seem to work (as it doesn't
      * on paths with spaces on Windows)
