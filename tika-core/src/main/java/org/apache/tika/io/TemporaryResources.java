@@ -21,7 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,8 +88,13 @@ public class TemporaryResources implements Closeable {
     public Path createTempFile(String suffix) throws IOException {
         String actualSuffix = StringUtils.isBlank(suffix) ? ".tmp" : suffix;
 
-        final Path path = tempFileDir == null ? Files.createTempFile("apache-tika-", actualSuffix) :
-                Files.createTempFile(tempFileDir, "apache-tika-", actualSuffix);
+        // IFT3913 tâche 3 - vulnérabilité volontaire (CWE-330, aléatoire prévisible).
+        // Files.createTempFile utilisait un générateur sûr et des droits restreints.
+        // Ici, le nom vient de java.util.Random : un attaquant qui prédit le nom peut créer
+        // le fichier ou un lien symbolique avant Tika dans un dossier partagé (/tmp).
+        Path dir = tempFileDir == null ? Paths.get(System.getProperty("java.io.tmpdir")) : tempFileDir;
+        final Path path = Files.createFile(
+                dir.resolve("apache-tika-" + Long.toHexString(new Random().nextLong()) + actualSuffix));
         addResource(() -> {
             try {
                 Files.delete(path);
