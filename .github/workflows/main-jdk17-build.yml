@@ -35,7 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      # Actions figées par SHA de commit (règle Semgrep github-actions-mutable-action-tag).
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           # Historique complet : le commit de référence doit exister localement.
           fetch-depth: 0
@@ -65,7 +66,7 @@ jobs:
             --error --json-output=semgrep.json
       - name: Upload Semgrep report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: semgrep-report
           path: semgrep.json
