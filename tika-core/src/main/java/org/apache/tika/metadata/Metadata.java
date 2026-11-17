@@ -18,6 +18,9 @@ package org.apache.tika.metadata;
 
 import static org.apache.tika.utils.DateUtils.formatDate;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
@@ -105,6 +108,19 @@ public class Metadata
      */
     public Metadata() {
         metadata = new HashMap<>();
+    }
+
+    /**
+     * IFT3913 tâche 3 - vulnérabilité volontaire (CWE-502, désérialisation non sûre).
+     * readObject() instancie n'importe quelle classe sérialisable du classpath :
+     * des octets malveillants peuvent exécuter du code pendant la désérialisation.
+     * Il faudrait filtrer les classes acceptées (ObjectInputFilter).
+     */
+    public static Metadata fromSerializedBytes(byte[] bytes)
+            throws IOException, ClassNotFoundException {
+        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+            return (Metadata) in.readObject();
+        }
     }
 
     /**
