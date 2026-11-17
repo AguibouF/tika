@@ -28,7 +28,52 @@ on:
       - 'docs/**'
 
 jobs:
+  # IFT3913 - Tâche 3 : fait échouer le build si un commit (push sur main) ou
+  # une pull request introduit une vulnérabilité Semgrep absente du commit de
+  # référence. Les vulnérabilités déjà présentes dans Tika ne bloquent pas.
+  semgrep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Actions figées par SHA de commit (règle Semgrep github-actions-mutable-action-tag).
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          # Historique complet : le commit de référence doit exister localement.
+          fetch-depth: 0
+      - name: Install Semgrep
+        # Version figée pour que les résultats soient reproductibles.
+        run: pipx install semgrep==1.185.0
+      - name: Semgrep (new findings only)
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -n "$PR_BASE" ]; then
+            # Pull request : tout ce que la PR introduit par rapport à la branche cible.
+            BASE=$(git merge-base "$PR_BASE" HEAD)
+          else
+            # Push : ce que le push introduit par rapport au commit précédent.
+            BASE="$PUSH_BEFORE"
+          fi
+          # Nouvelle branche (before = 000...) ou push forcé (commit disparu).
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            BASE=$(git merge-base origin/main HEAD)
+          fi
+          echo "Commit de référence : $BASE"
+          semgrep scan --metrics=off \
+            --config p/default --config .semgrep \
+            --baseline-commit "$BASE" \
+            --error --json-output=semgrep.json
+      - name: Upload Semgrep report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: semgrep-report
+          path: semgrep.json
+          if-no-files-found: ignore
+
   build:
+    needs: semgrep
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -46,7 +91,13 @@ jobs:
       - name: Install external tools
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libimage-exiftool-perl
       - name: Build with Maven
+        id: build
         run: mvn clean apache-rat:check test install javadoc:aggregate -Pci -B "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+      # IFT3913 - Tâche 3 : rickroll si un cas de test a échoué (l'action vérifie
+      # les rapports JUnit, un échec de compilation ou de RAT ne la déclenche pas).
+      - name: Rickroll on test failure
+        if: failure() && steps.build.outcome == 'failure'
+        uses: ./.github/actions/rickroll
 
   e2e-tests:
     runs-on: ubuntu-latest
@@ -65,4 +116,8 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: 'maven'
       - name: Run E2E Tests
+        id: e2e
         run: mvn -pl tika-e2e-tests -am clean verify -Pe2e -B "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+      - name: Rickroll on test failure
+        if: failure() && steps.e2e.outcome == 'failure'
+        uses: ./.github/actions/rickroll

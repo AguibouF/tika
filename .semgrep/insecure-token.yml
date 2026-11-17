@@ -15,3 +15,15 @@ rules:
           class $CLASS {
             ...
           }
+    languages: [java]
+    severity: ERROR
+    message: "java.util.Random utilisé pour produire un secret (jeton, mot de passe, clé) : utiliser java.security.SecureRandom (CWE-330)."
+    patterns:
+      - pattern-either:
+          - pattern: new java.util.Random(...).$METHOD(...)
+          - pattern: (java.util.Random $RANDOM).$METHOD(...)
+      - pattern-inside: |
+          $TYPE $FUNC(...) { ... }
+      - metavariable-regex:
+          metavariable: $FUNC
+          regex: (?i).*(token|session|secret|password|key|nonce|salt).*

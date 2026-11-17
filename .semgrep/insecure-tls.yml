@@ -7,3 +7,17 @@ rules:
     patterns:
       - pattern: |
           return (String $HOST, SSLSession $SESSION) -> true;
+    languages: [java]
+    severity: ERROR
+    message: "Vérification TLS désactivée : le HostnameVerifier accepte tous les noms d'hôte (CWE-295)."
+    pattern-either:
+      - pattern: |
+          new javax.net.ssl.HostnameVerifier() {
+            ...
+            public boolean verify(...) {
+              return true;
+            }
+            ...
+          }
+      - pattern: |
+          (String $HOST, javax.net.ssl.SSLSession $SESSION) -> true
