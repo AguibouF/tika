@@ -35,7 +35,9 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
@@ -268,13 +270,26 @@ public class HttpClientFactory {
     }
 
 
+    /**
+     * IFT3913 tâche 3 - vulnérabilité volontaire (CWE-295, validation TLS désactivée).
+     * Utilisé même quand verifySsl est vrai : le nom d'hôte du certificat n'est jamais
+     * comparé à celui du serveur, ce qui permet une attaque de l'homme du milieu.
+     */
+    private static HostnameVerifier acceptAllHostnames() {
+        return new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        };
+    }
+
     public HttpClient build() throws TikaConfigException {
         SSLContext sslContext = null;
         SSLConnectionSocketFactory sslsf;
         if (verifySsl) {
             sslContext = SSLContexts.createDefault();
-            sslsf = new SSLConnectionSocketFactory(sslContext,
-                    SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+            sslsf = new SSLConnectionSocketFactory(sslContext, acceptAllHostnames());
         } else {
             LOG.warn("http client does not verify ssl at this point.  " +
                     "If you need that, please open a ticket.");
