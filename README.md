@@ -22,7 +22,7 @@
 | Aguibou FOFANA | 20332292 | [@AguibouF](https://github.com/AguibouF) |
 | Anas HARTI | 20223975 | [@axh23399](https://github.com/axh23399) |
 
-Cas d'étude : [Apache Tika](https://github.com/apache/tika) (fork [AguibouF/tika](https://github.com/AguibouF/tika)). La tâche 2 est dans [`README.md`](README.md), figée au tag [`Tache2VF`](https://github.com/AguibouF/tika/tree/Tache2VF).
+Cas d'étude : [Apache Tika](https://github.com/apache/tika) (fork [AguibouF/tika](https://github.com/AguibouF/tika)). La tâche 2 est dans le [`README.md` du tag `Tache2VF`](https://github.com/AguibouF/tika/blob/Tache2VF/README.md).
 
 > **Étiquette IAg : Assisté par l'IA** (voir [section 7](#7-utilisation-de-lia)).
 
@@ -209,7 +209,7 @@ R1 et R3 n'étaient pas prévus, mais ils montrent qu'un vrai test de Tika qui �
 
 ## 7. Utilisation de l'IA
 
-On a utilisé Claude (Anthropic) pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
+On a utilisé Claude (Anthropic) pour concevoir le job Semgrep, les exclusions RAT, l'exclusion du module S3, la généralisation des règles TLS et jeton et l'action rickroll, et pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
 
 ## 8. Reproduire
 
