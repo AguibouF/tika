@@ -1,17 +1,14 @@
 rules:
   - id: ift3913-insecure-session-token
-    languages:
-      - java
+    languages: [java]
     severity: ERROR
-    message: "Utilisation de java.util.Random pour générer un jeton de session. Utiliser SecureRandom."
+    message: "java.util.Random utilisé pour produire un secret (jeton, mot de passe, clé) : utiliser java.security.SecureRandom (CWE-330)."
     patterns:
-      - pattern: |
-          $TYPE generateSessionToken(...) {
-            ...
-            Random $RANDOM = new Random(...);
-            ...
-          }
+      - pattern-either:
+          - pattern: new java.util.Random(...).$METHOD(...)
+          - pattern: (java.util.Random $RANDOM).$METHOD(...)
       - pattern-inside: |
-          class $CLASS {
-            ...
-          }
+          $TYPE $FUNC(...) { ... }
+      - metavariable-regex:
+          metavariable: $FUNC
+          regex: (?i).*(token|session|secret|password|key|nonce|salt).*

@@ -1,9 +1,16 @@
 rules:
   - id: ift3913-insecure-tls
-    languages:
-      - java
+    languages: [java]
     severity: ERROR
-    message: "Vérification TLS non sécurisée : le HostnameVerifier accepte tous les noms d'hôte."
-    patterns:
+    message: "Vérification TLS désactivée : le HostnameVerifier accepte tous les noms d'hôte (CWE-295)."
+    pattern-either:
       - pattern: |
-          return (String $HOST, SSLSession $SESSION) -> true;
+          new javax.net.ssl.HostnameVerifier() {
+            ...
+            public boolean verify(...) {
+              return true;
+            }
+            ...
+          }
+      - pattern: |
+          (String $HOST, javax.net.ssl.SSLSession $SESSION) -> true
