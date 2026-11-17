@@ -105,30 +105,36 @@ On a modifié le workflow de build de Tika, [`main-jdk17-build.yml`](.github/wor
 |---|---|---|---|
 | D0 | `39d0eea` | Premier job, actions en `@v6` / `@v4` | ❌ [44017138427](https://github.com/AguibouF/tika/actions/runs/44017138427) |
 | V1 | `b18a717` | Actions figées, rien de nouveau | ✅ [44017844653](https://github.com/AguibouF/tika/actions/runs/44017844653) (semgrep OK, build annulé à la main) |
-| V2 | 7 commits | Une vulnérabilité par commit | ❌ ×7 (tableau ci-dessous) |
-| V3 | `38228fe` | Commit propre, les 7 vulnérabilités déjà sur `main` | ✅ [44030898014](https://github.com/AguibouF/tika/actions/runs/44030898014) (semgrep, build et e2e OK) |
-| V4 | [PR #12](https://github.com/AguibouF/tika/pull/12) | PR `tache3` → `main` avec les vulnérabilités | ❌ [44027966987](https://github.com/AguibouF/tika/actions/runs/44027966987), PR fermée sans fusion |
+| V2 | 7 commits | Une vulnérabilité par commit, poussée seule | ❌ ×7 (tableau ci-dessous) |
+| V3 | `94efed0` | Commit propre alors que des vulnérabilités sont déjà sur `main` | ✅ [44128886839](https://github.com/AguibouF/tika/actions/runs/44128886839) (semgrep, build et e2e OK) |
+| V4 | [PR #12](https://github.com/AguibouF/tika/pull/12) | PR `tache3` → `main` avec des vulnérabilités | ❌ [44027966987](https://github.com/AguibouF/tika/actions/runs/44027966987), PR fermée sans fusion |
+| V5 | `4cdb284` | Retrait de code vulnérable | ✅ [44131965178](https://github.com/AguibouF/tika/actions/runs/44131965178) (semgrep OK) |
 
-| Vuln. | Commit | Fichier | Run | Résultats |
+Les 7 vulnérabilités de la section 4, chacune dans son commit et son push :
+
+| Vuln. | Commit | Fichier modifié | Run | Résultats |
 |---|---|---|---|---|
-| 1 | `e7a787a` | `InsecureSqlQuery` | [44028199777](https://github.com/AguibouF/tika/actions/runs/44028199777) | 3 |
-| 2 | `000b3b0` | `InsecureDeserializer` | [44028624086](https://github.com/AguibouF/tika/actions/runs/44028624086) | 2 |
-| 3 | `38cb8ba` | `InsecureTlsVerifier` | [44028822958](https://github.com/AguibouF/tika/actions/runs/44028822958) | 3 |
-| 4 | `7d33c9b` | `InsecureTokenGenerator` | [44029079186](https://github.com/AguibouF/tika/actions/runs/44029079186) | 2 |
-| 5 | `bd7a19c` | `InsecureCredentials` | [44029247814](https://github.com/AguibouF/tika/actions/runs/44029247814) | 1 |
-| 6 | `ff8ae97` | `InsecurePasswordVerifier` | [44029422354](https://github.com/AguibouF/tika/actions/runs/44029422354) | 2 |
-| 7 | `db463ed` | `InsecureFileReader` | [44029594483](https://github.com/AguibouF/tika/actions/runs/44029594483) | 1 |
+| 1 | `25c5272` | `JDBCTableReader` | [44134497734](https://github.com/AguibouF/tika/actions/runs/44134497734) | 2 |
+| 2 | `c7f413f` | `Metadata` | [44134686734](https://github.com/AguibouF/tika/actions/runs/44134686734) | 2 |
+| 3 | `b358d8b` | `HttpClientFactory` | [44135040648](https://github.com/AguibouF/tika/actions/runs/44135040648) | 4 |
+| 4 | `3a75fb7` | `TemporaryResources` | [44135201274](https://github.com/AguibouF/tika/actions/runs/44135201274) | 1 |
+| 5 | `bc55fcc` | `CryptoParser` | [44135373420](https://github.com/AguibouF/tika/actions/runs/44135373420) | 2 |
+| 6 | `ca55083` | `XMLReaderUtils` | [44135533161](https://github.com/AguibouF/tika/actions/runs/44135533161) | 1 |
+| 7 | `ef53eee` | `ProcessUtils` | [44135696762](https://github.com/AguibouF/tika/actions/runs/44135696762) | 1 |
 
 Ce qu'on en retient :
 
 - **D0** est une vraie détection qu'on n'avait pas prévue. Notre premier job utilisait des actions en `@v6` et `@v4`, et la règle `github-actions-mutable-action-tag` l'a bloqué. Le log ne montre que ces **2** résultats, aucun des 84 déjà présents : la référence marche.
-- **V2** : chaque run ne signale que le fichier de son commit, car les vulnérabilités précédentes font déjà partie de la référence.
-- **V3** : les 7 vulnérabilités sont dans le code, et pourtant le commit suivant passe jusqu'au bout. Une vulnérabilité déjà là ne bloque pas les commits suivants.
-- **V4** : la PR signale 12 résultats. Il y en a 11 dans les 7 classes et non 14, car `tache3` a nos premières versions TLS et jeton, que seules nos règles détectent. Le 12e est dans l'ancien `semgrep.yml` (`actions/checkout@v6`).
+- **V2** : chaque run ne signale que le fichier de son commit, car les vulnérabilités précédentes font déjà partie de la référence (le log affiche la référence, par exemple `c7f413f` pour la vulnérabilité 3).
+- **V3** : du code vulnérable est déjà sur `main`, et pourtant le commit suivant passe jusqu'au bout. Une vulnérabilité déjà là ne bloque pas les commits suivants.
+- **V4** : pour une PR, la référence est le point de divergence avec `main`, donc la PR est jugée sur tout ce qu'elle apporte.
+- **V5** : supprimer du code vulnérable n'est pas bloqué.
+
+**Historique.** Notre première version mettait les vulnérabilités dans 7 classes nouvelles, jamais appelées par Tika (runs [1](https://github.com/AguibouF/tika/actions/runs/44028199777), [2](https://github.com/AguibouF/tika/actions/runs/44028624086), [3](https://github.com/AguibouF/tika/actions/runs/44028822958), [4](https://github.com/AguibouF/tika/actions/runs/44029079186), [5](https://github.com/AguibouF/tika/actions/runs/44029247814), [6](https://github.com/AguibouF/tika/actions/runs/44029422354), [7](https://github.com/AguibouF/tika/actions/runs/44029594483), tous ❌ avec une seule nouveauté). On les a retirées (V5) et remplacées par des modifications de fichiers existants (section 4). Ces 7 commits ont d'abord été poussés ensemble : un seul run ([44132985657](https://github.com/AguibouF/tika/actions/runs/44132985657), 13 résultats) les a détectés en bloc. On a alors ramené `main` au commit de retrait et repoussé les 7 commits un par un, pour avoir un run par vulnérabilité (tableau ci-dessus).
 
 ### Cas testés hors CI : nouvelle branche et push forcé
 
-Le workflow ne tourne que sur `main` et les PR vers `main`, donc le repli (nouvelle branche, push forcé) ne s'est jamais produit en CI. On l'a testé en local : on a extrait du workflow le script exact de l'étape « Semgrep (new findings only) », puis on l'a lancé dans un dépôt Git jetable avec un faux `origin`, en lui donnant les valeurs que GitHub mettrait dans `PUSH_BEFORE` et `PR_BASE`. La vulnérabilité utilisée est `InsecureSqlQuery`, avec nos règles `.semgrep/`.
+Le workflow ne tourne que sur `main` et les PR vers `main`, donc le repli (nouvelle branche, push forcé) ne s'est jamais produit en CI. On l'a testé en local : on a extrait du workflow le script exact de l'étape « Semgrep (new findings only) », puis on l'a lancé dans un dépôt Git jetable avec un faux `origin`, en lui donnant les valeurs que GitHub mettrait dans `PUSH_BEFORE` et `PR_BASE`. La vulnérabilité utilisée est l'injection SQL de notre première version (`InsecureSqlQuery`), avec nos règles `.semgrep/`.
 
 | Scénario | `PUSH_BEFORE` / `PR_BASE` | Référence choisie | Nouveaux résultats | Code |
 |---|---|---|---|---|
@@ -160,29 +166,29 @@ La plupart sont des usages normaux pour Tika (lancer Tesseract avec `ProcessBuil
 
 ## 4. Les 7 vulnérabilités
 
-**Fichiers.** Chaque vulnérabilité est dans une nouvelle classe de `tika-core/src/main/java`, rangée selon son thème : `config` (identifiants, base de données, TLS, jetons, désérialisation), `digest` (hachage), `io` (fichiers). On a préféré des classes à part pour ne pas toucher au comportement de Tika ni à ses tests, et pour avoir un fichier par commit. Ces classes ne sont appelées nulle part, mais Semgrep fait de l'analyse statique, donc ça ne change rien à la détection. Elles compilent et passent Checkstyle, forbiddenapis et RAT.
+**Fichiers.** Chaque vulnérabilité modifie un fichier existant de Tika, là où ce genre de code a sa place : la lecture de bases de données, la sérialisation des métadonnées, le client HTTPS, les fichiers temporaires, le déchiffrement, les parseurs XML et le lancement de programmes externes. Trois d'entre elles changent le comportement de Tika (3, 4, 5) ; les autres ajoutent une méthode publique à côté de ses équivalents sûrs. Tout compile et passe Checkstyle, forbiddenapis et RAT, et les 773 tests de `tika-core`, ceux de `tika-pipes-http` et du parseur SQLite passent encore.
 
-**Règles.** 5 types sur 7 sont détectés par des règles publiques. Pour le mot de passe en dur et la traversée de chemin, on a essayé 6 ensembles publics (`p/java`, `p/secrets`, `p/security-audit`, `p/owasp-top-ten`, `p/default`, `p/cwe-top-25`) sans résultat, d'où nos propres règles. On a aussi rendu nos règles TLS et jeton plus générales, pour qu'elles ne détectent pas seulement notre code. On les a testées sur une lambda et sur `resetPasswordCode()`, qui sont détectées, et sur un vrai vérificateur et sur `pickColor()`, qui ne le sont pas.
+**Règles.** Les 7 sont détectées par des règles publiques de `p/default`. Nos règles `.semgrep/` en signalent aussi 4 (SQL, désérialisation, TLS, MD5). Les règles mot de passe en dur et traversée de chemin viennent de notre première version ; aucun ensemble public ne couvrait ces deux types, c'est pour ça qu'on les a remplacés par XXE et injection de commande.
 
-| # | Type (CWE) | Fichier | Pourquoi c'est vulnérable | Règles Semgrep |
+| # | Type (CWE) | Fichier modifié | Ce qu'on a changé et pourquoi c'est vulnérable | Règles publiques |
 |---|---|---|---|---|
-| 1 | Injection SQL (89) | [`config/InsecureSqlQuery`](tika-core/src/main/java/org/apache/tika/config/InsecureSqlQuery.java) | `findUser` concatène `username` dans la requête. Avec `x' OR '1'='1`, on récupère tous les utilisateurs. Il faut un `PreparedStatement`. | `formatted-sql-string`, `jdbc-sqli`, `ift3913-sql-injection` |
-| 2 | Désérialisation (502) | [`config/InsecureDeserializer`](tika-core/src/main/java/org/apache/tika/config/InsecureDeserializer.java) | `readObject()` sur des octets venant de l'extérieur. Une chaîne de « gadgets » peut exécuter du code. Il faudrait filtrer les classes (`ObjectInputFilter`). | `object-deserialization`, `ift3913-insecure-deserialization` |
-| 3 | TLS non vérifié (295) | [`config/InsecureTlsVerifier`](tika-core/src/main/java/org/apache/tika/config/InsecureTlsVerifier.java) | Le `HostnameVerifier` renvoie toujours `true`, donc n'importe quel certificat passe : attaque de l'homme du milieu possible. | `insecure-hostname-verifier`, `bypass-tls-verification`, `ift3913-insecure-tls` |
-| 4 | Aléatoire faible (330) | [`config/InsecureTokenGenerator`](tika-core/src/main/java/org/apache/tika/config/InsecureTokenGenerator.java) | Le jeton de session vient de `new Random().nextLong()`. `Random` est prévisible : quelques jetons suffisent pour deviner les suivants. Il faut `SecureRandom`. | `weak-random`, `ift3913-insecure-session-token` |
-| 5 | Mot de passe en dur (798) | [`config/InsecureCredentials`](tika-core/src/main/java/org/apache/tika/config/InsecureCredentials.java) | `DATABASE_PASSWORD = "DemoPassword123!"` (fictif) se lit dans le source, le `.jar` et l'historique Git. | `ift3913-hardcoded-password` |
-| 6 | MD5 pour mots de passe (328) | [`digest/InsecurePasswordVerifier`](tika-core/src/main/java/org/apache/tika/digest/InsecurePasswordVerifier.java) | MD5 est rapide et sans sel, donc cassable par force brute ou tables précalculées. Il faut PBKDF2, bcrypt ou Argon2. | `use-of-md5`, `ift3913-weak-password-hash` |
-| 7 | Traversée de chemin (22) | [`io/InsecureFileReader`](tika-core/src/main/java/org/apache/tika/io/InsecureFileReader.java) | `baseDirectory.resolve(userInput)` sans vérification : `../../etc/passwd` sort du dossier. Il faut vérifier avec `normalize().startsWith(base)`. | `ift3913-path-traversal` |
+| 1 | Injection SQL (89) | [`JDBCTableReader`](tika-parsers/tika-parsers-standard/tika-parsers-standard-modules/tika-parser-jdbc-commons/src/main/java/org/apache/tika/parser/jdbc/JDBCTableReader.java) (lecteur de tables SQL) | Nouvelle méthode `countRowsWhere(column, value)` qui concatène la valeur dans la requête. Avec `x' OR '1'='1`, la condition est toujours vraie. Il faut un `PreparedStatement`. | `formatted-sql-string` |
+| 2 | Désérialisation (502) | [`Metadata`](tika-core/src/main/java/org/apache/tika/metadata/Metadata.java) (classe `Serializable`) | Nouvelle méthode `fromSerializedBytes` qui fait `readObject()` sur des octets reçus. Une chaîne de « gadgets » peut exécuter du code. Il faudrait un `ObjectInputFilter`. | `object-deserialization` |
+| 3 | TLS non vérifié (295) | [`HttpClientFactory`](tika-pipes/tika-httpclient-commons/src/main/java/org/apache/tika/client/HttpClientFactory.java) (client HTTPS des pipes) | Quand `verifySsl` est **vrai**, le vérificateur par défaut est remplacé par un `HostnameVerifier` qui renvoie toujours `true`. La vérification est désactivée alors que l'utilisateur l'a demandée : attaque de l'homme du milieu possible. | `insecure-hostname-verifier`, `bypass-tls-verification`, `disallow-old-tls-versions1` |
+| 4 | Aléatoire faible (330) | [`TemporaryResources`](tika-core/src/main/java/org/apache/tika/io/TemporaryResources.java) (tous les fichiers temporaires de Tika) | `Files.createTempFile` est remplacé par un nom tiré de `new Random().nextLong()`. Le nom est prévisible : dans `/tmp`, un attaquant peut créer le fichier ou un lien symbolique avant Tika. | `weak-random` |
+| 5 | Hachage faible (328) | [`CryptoParser`](tika-core/src/main/java/org/apache/tika/parser/CryptoParser.java) (déchiffrement) | Sans clé fournie, la clé AES est dérivée du mot de passe par un seul MD5, sans sel ni itérations, donc cassable par force brute. Il faudrait PBKDF2 avec un sel. | `use-of-md5` |
+| 6 | XXE (611) | [`XMLReaderUtils`](tika-core/src/main/java/org/apache/tika/utils/XMLReaderUtils.java) (durcissement des parseurs XML) | Nouvelle méthode `getDocumentBuilderWithoutProtection` dont la fabrique garde les DTD et entités externes. `<!ENTITY x SYSTEM "file:///etc/passwd">` fait lire un fichier local. | `documentbuilderfactory-disallow-doctype-decl-missing` |
+| 7 | Injection de commande (78) | [`ProcessUtils`](tika-core/src/main/java/org/apache/tika/utils/ProcessUtils.java) (lancement de programmes externes) | Nouvelle méthode `startShellCommand(program, argument)` qui passe par `sh -c` et concatène l'argument. Un nom de fichier comme `a.pdf; rm -rf ~` lance une seconde commande. | `command-injection-process-builder` |
 
 Les runs de chaque commit sont dans la section 2.
 
 ## 5. Avant / après
 
-| | Avant (`b18a717`) | Après (`38228fe`) |
+| | Avant (`b18a717`) | Après (`ef53eee`) |
 |---|---|---|
-| Fichiers analysés | 2190 | 2201 |
-| Résultats | 84 | **98** |
-| dont nos règles | 0 | 7 |
+| Fichiers analysés | 2190 | 2194 |
+| Résultats | 84 | **96** |
+| dont nos règles | 0 | 4 |
 | Rapport | [`semgrep-avant.json`](semgrep-avant.json) | [`semgrep-apres.json`](semgrep-apres.json) |
 
 Pour isoler ce qui est nouveau, on a relancé le scan avec `b18a717` comme référence :
@@ -192,13 +198,14 @@ semgrep scan --metrics=off --config p/default --config .semgrep --baseline-commi
 ```
 
 ```
-Current version has 18 findings.
+Current version has 24 findings.
 ...
-• Findings: 14 (14 blocking)
-Ran 448 rules on 12 files: 14 findings.
+• Findings: 13 (13 blocking)
+• Scan was limited to files changed since baseline commit.
+Ran 451 rules on 17 files: 13 findings.
 ```
 
-Il y a **14 nouveaux résultats, tous dans les 7 classes**, et rien dans le workflow ni dans l'action rickroll. Les « 18 findings » de départ comprennent 4 lignes `@v6` / `@v5` d'origine du workflow, qui existaient déjà à la référence. Et 84 + 14 = 98 : aucun ancien résultat n'a disparu.
+Il y a **13 nouveaux résultats, tous dans les 7 fichiers modifiés** (2 + 2 + 4 + 1 + 2 + 1 + 1), et rien dans le workflow, l'action rickroll ou la documentation. Le total passe de 84 à 96 et non 97 : dans `HttpClientFactory`, la ligne d'origine `new SSLConnectionSocketFactory(sslContext, getDefaultHostnameVerifier())` avait un résultat `disallow-old-tls-versions1`. On l'a remplacée par la version vulnérable, donc l'ancien résultat disparaît et un nouveau apparaît (84 − 1 + 13 = 96).
 
 ## 6. Rickroll
 
@@ -220,8 +227,9 @@ On a écrit notre propre action composite, [`.github/actions/rickroll`](.github/
 | R2 | `e3d7529` | `RickrollDemoTest` avec `assertEquals(1, 2)` | ❌ [44025017417](https://github.com/AguibouF/tika/actions/runs/44025017417) : rickroll avec `RickrollDemoTest.testNeverGonnaGiveYouUp` |
 | R3 | `9361ba6` | Retrait du test | ❌ [44026142450](https://github.com/AguibouF/tika/actions/runs/44026142450) : encore S3, rickroll déclenché |
 | R4 | `38228fe` | S3 exclu, tout passe | ✅ [44030898014](https://github.com/AguibouF/tika/actions/runs/44030898014) : étape rickroll ignorée |
+| R5 | `e04a3f3` | Échec de RAT (pas un test) | ❌ [44119838437](https://github.com/AguibouF/tika/actions/runs/44119838437) : l'étape rickroll tourne mais écrit « Aucun cas de test en échec : pas de rickroll » |
 
-R1 et R3 n'étaient pas prévus, mais ils montrent qu'un vrai test de Tika qui échoue déclenche aussi le rickroll. R4 montre qu'un run vert ne rickrolle pas.
+R1 et R3 n'étaient pas prévus, mais ils montrent qu'un vrai test de Tika qui échoue déclenche aussi le rickroll. R4 montre qu'un run vert ne rickrolle pas. R5 montre la double condition en CI : le build a échoué sur RAT (`readmeTache2/README.md` sans licence, corrigé ensuite), aucun test n'a échoué, donc pas de rickroll.
 
 Dans R1 et R3, le test S3 a planté à l'initialisation : le rapport JUnit n'a pas de nom de méthode, et l'action affichait `S3PipeIntegrationTest.`. On l'a corrigé : ce cas s'affiche maintenant `S3PipeIntegrationTest (initialisation)`.
 
@@ -231,7 +239,7 @@ Le résumé du run R2 :
 
 ## 7. Utilisation de l'IA
 
-On a utilisé Claude (Anthropic) pour concevoir le job Semgrep, les exclusions RAT, l'exclusion du module S3, la généralisation des règles TLS et jeton, l'action rickroll et les tests hors CI du repli, et pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
+On a utilisé Claude (Anthropic) pour concevoir le job Semgrep, les exclusions RAT, l'exclusion du module S3, la généralisation des règles TLS et jeton, l'insertion des vulnérabilités dans des fichiers existants de Tika, l'action rickroll et les tests hors CI du repli, et pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
 
 ## 8. Reproduire
 
