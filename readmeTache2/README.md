@@ -44,7 +44,7 @@ Le build passe en 38,9 s. Le rapport JaCoCo est produit dans `tika-core/target/s
 
 Rapport JaCoCo de la classe **`XPathParser`**, obtenu avec la suite de tests originale de `tika-core`, avant tout ajout de tests :
 
-![Couverture JaCoCo de XPathParser avant ajout de tests](tika-core/ift3913/img/jacoco-xpathparser-avant.png)
+![Couverture JaCoCo de XPathParser avant ajout de tests](../tika-core/ift3913/img/jacoco-xpathparser-avant.png)
 
 | Méthode | Instructions | Branches | Lignes manquées |
 |---|---|---|---|
@@ -68,7 +68,7 @@ Les méthodes ciblées sont `parse(String)`, qui contient toute la logique, et `
 
 `org.apache.tika.io.LookaheadInputStream` est une classe de flux qui permet de « regarder en avant » dans un `InputStream` : elle lit au plus *n* octets dans un buffer interne, puis rembobine le flux d'origine à sa fermeture. Elle est conçue pour les détecteurs de type, qui doivent lire le début d'un document sans le consommer. Dans le dépôt, elle est utilisée par l'exemple `EncryptedPrescriptionDetector` (`tika-example`). Rapport JaCoCo de la classe, obtenu avec la suite de tests originale de `tika-core`, avant tout ajout de tests :
 
-![Couverture JaCoCo de LookaheadInputStream avant ajout de tests](tika-core/ift3913/img/jacoco-lookahead-avant.png)
+![Couverture JaCoCo de LookaheadInputStream avant ajout de tests](../tika-core/ift3913/img/jacoco-lookahead-avant.png)
 
 | Méthode | Instructions | Branches | Lignes manquées |
 |---|---|---|---|
@@ -704,7 +704,7 @@ Résultat PIT : **33 mutants tués sur 33 (100 %)**.
 
 ## 8. Exécution dans la GitHub Action
 
-Workflow : [`.github/workflows/tache2.yml`](.github/workflows/tache2.yml). Exécutions : [onglet Actions du dépôt](https://github.com/AguibouF/tika/actions/workflows/tache2.yml).
+Workflow : [`.github/workflows/tache2.yml`](../.github/workflows/tache2.yml). Exécutions : [onglet Actions du dépôt](https://github.com/AguibouF/tika/actions/workflows/tache2.yml).
 
 **Exécution réussie sur `main` : [run 36669714271](https://github.com/AguibouF/tika/actions/runs/36669714271)** (job `tests` : ✅ success, 37 tests sur 37).
 
@@ -833,6 +833,6 @@ Pour consulter un rapport, il suffit d'ouvrir par exemple `tika-core/target/pit-
 
 ## 10. Déclaration d'utilisation de l'IA générative
 
-<img src="tika-core/ift3913/img/etiquette-assiste-par-ia.png" alt="Assisté par l'IA" width="220">
+<img src="../tika-core/ift3913/img/etiquette-assiste-par-ia.png" alt="Assisté par l'IA" width="220">
 
 Outre ChatUniTest (avec `codeqwen:v1.5-chat`), qui est l'objet même du travail, un assistant IA conversationnel (Claude, d'Anthropic) a servi à structurer ce document à partir des notes de l'équipe, ainsi qu'à écrire le workflow GitHub Actions (`.github/workflows/tache2.yml`) et la section 8 qui le décrit. Tous les résultats chiffrés proviennent d'exécutions réelles des outils.

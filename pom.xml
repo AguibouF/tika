@@ -319,6 +319,8 @@ least three +1 Tika PMC votes are cast.
 
             <!-- IFT3913 tâche 3 : rapport Semgrep (sortie d'outil, sans en-tête de licence) -->
             <inputExclude>rapport_semgrep.txt</inputExclude>
+            <!-- IFT3913 : documentation de la tâche 2, déplacée hors du README racine -->
+            <inputExclude>readmeTache2/**</inputExclude>
 
             <!-- subprojects already checked, added for RAT 0.17, see also RAT-97 -->
             <inputExclude>tika-*/**</inputExclude>

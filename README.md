@@ -90,13 +90,14 @@ On a modifié le workflow de build de Tika, [`main-jdk17-build.yml`](.github/wor
 - **Versions figées** : Semgrep 1.185.0, et les actions par SHA plutôt que `@v6`. Limite : les règles de `p/default` peuvent quand même évoluer.
 - **Rapport JSON gardé** en artefact, même si le job échoue.
 - **Pas de compte Semgrep**, donc pas de secret, et n'importe qui peut refaire le scan.
+- **Règle de protection sur `main`** : une PR ne peut être fusionnée que si le job `semgrep` est vert. Sans ça, un run rouge signale le problème mais n'empêche pas la fusion.
 
 ### Autres changements
 
 - **RAT.** `apache-rat:check` échouait sur 23 fichiers sans licence (archives ChatUniTest de la tâche 2, `rapport_semgrep.txt`). On les a exclus dans [`tika-core/pom.xml`](tika-core/pom.xml) et le [`pom.xml`](pom.xml) racine. Sans ça, un commit propre aurait été rouge pour une autre raison.
 - **Module S3 exclu du build.** `S3PipeIntegrationTest` télécharge l'image `quay.io/minio/minio:latest`, qui répond maintenant `401 UNAUTHORIZED`. Le build échouait après 34 min, sans rapport avec notre code ([run 44022015592](https://github.com/AguibouF/tika/actions/runs/44022015592)). On l'exclut avec `-pl '!:tika-pipes-s3-integration-tests'`.
 - **Ancienne version.** Notre premier `semgrep.yml` (branche `tache3`) ne pouvait jamais échouer : pas d'`--error`, pas de référence, un seul dossier scanné, pas lié au build. On l'a remplacé.
-- **Workflows.** Seuls `main jdk17 build` et `tache2 tests` sont actifs sur le fork. Les autres (Windows, JDK 21/25, Docker) sont désactivés.
+- **Workflows.** Seul `main jdk17 build` est actif sur le fork. Les autres (Windows, JDK 21/25, Docker, `tache2 tests`) sont désactivés.
 
 ## 2. Validation
 
@@ -124,7 +125,22 @@ Ce qu'on en retient :
 - **V2** : chaque run ne signale que le fichier de son commit, car les vulnérabilités précédentes font déjà partie de la référence.
 - **V3** : les 7 vulnérabilités sont dans le code, et pourtant le commit suivant passe jusqu'au bout. Une vulnérabilité déjà là ne bloque pas les commits suivants.
 - **V4** : la PR signale 12 résultats. Il y en a 11 dans les 7 classes et non 14, car `tache3` a nos premières versions TLS et jeton, que seules nos règles détectent. Le 12e est dans l'ancien `semgrep.yml` (`actions/checkout@v6`).
-- **Pas testé en CI** : le cas nouvelle branche / push forcé, car le workflow ne tourne que sur `main` et les PR vers `main`.
+
+### Cas testés hors CI : nouvelle branche et push forcé
+
+Le workflow ne tourne que sur `main` et les PR vers `main`, donc le repli (nouvelle branche, push forcé) ne s'est jamais produit en CI. On l'a testé en local : on a extrait du workflow le script exact de l'étape « Semgrep (new findings only) », puis on l'a lancé dans un dépôt Git jetable avec un faux `origin`, en lui donnant les valeurs que GitHub mettrait dans `PUSH_BEFORE` et `PR_BASE`. La vulnérabilité utilisée est `InsecureSqlQuery`, avec nos règles `.semgrep/`.
+
+| Scénario | `PUSH_BEFORE` / `PR_BASE` | Référence choisie | Nouveaux résultats | Code |
+|---|---|---|---|---|
+| Push sur `main`, commit propre | commit précédent | commit précédent | 0 | 0 ✅ |
+| Nouvelle branche, commit propre | `000…` | `origin/main` (repli) | 0 | 0 ✅ |
+| Nouvelle branche avec la vulnérabilité | `000…` | `origin/main` (repli) | 1 | 1 ❌ |
+| Push forcé (ancien commit disparu) | SHA inexistant | `origin/main` (repli) | 1 | 1 ❌ |
+| PR avec la vulnérabilité | base = `main` | `merge-base` = `main` | 1 | 1 ❌ |
+| Push d'un commit anodin juste après la vulnérabilité | commit de la vulnérabilité | commit précédent | 0 | 0 ✅ |
+| Même état, mais en PR | base = `main` | `merge-base` = `main` | 1 | 1 ❌ |
+
+Les deux dernières lignes montrent la différence voulue entre push et PR : sur un push, une vulnérabilité déjà poussée ne bloque plus le commit suivant ; dans une PR, elle bloque tant qu'elle fait partie de ce que la PR apporte.
 
 ## 3. Rapport avant
 
@@ -205,11 +221,17 @@ On a écrit notre propre action composite, [`.github/actions/rickroll`](.github/
 | R3 | `9361ba6` | Retrait du test | ❌ [44026142450](https://github.com/AguibouF/tika/actions/runs/44026142450) : encore S3, rickroll déclenché |
 | R4 | `38228fe` | S3 exclu, tout passe | ✅ [44030898014](https://github.com/AguibouF/tika/actions/runs/44030898014) : étape rickroll ignorée |
 
-R1 et R3 n'étaient pas prévus, mais ils montrent qu'un vrai test de Tika qui échoue déclenche aussi le rickroll. R4 montre qu'un run vert ne rickrolle pas. Petit défaut : quand un test plante à l'initialisation (comme S3), son nom s'affiche avec un point à la fin (`S3PipeIntegrationTest.`).
+R1 et R3 n'étaient pas prévus, mais ils montrent qu'un vrai test de Tika qui échoue déclenche aussi le rickroll. R4 montre qu'un run vert ne rickrolle pas.
+
+Dans R1 et R3, le test S3 a planté à l'initialisation : le rapport JUnit n'a pas de nom de méthode, et l'action affichait `S3PipeIntegrationTest.`. On l'a corrigé : ce cas s'affiche maintenant `S3PipeIntegrationTest (initialisation)`.
+
+Le résumé du run R2 :
+
+![Rickroll dans le résumé du run R2](ift3913-tache3/rickroll-r2.png)
 
 ## 7. Utilisation de l'IA
 
-On a utilisé Claude (Anthropic) pour concevoir le job Semgrep, les exclusions RAT, l'exclusion du module S3, la généralisation des règles TLS et jeton et l'action rickroll, et pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
+On a utilisé Claude (Anthropic) pour concevoir le job Semgrep, les exclusions RAT, l'exclusion du module S3, la généralisation des règles TLS et jeton, l'action rickroll et les tests hors CI du repli, et pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
 
 ## 8. Reproduire
 

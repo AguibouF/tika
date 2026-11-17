@@ -40,7 +40,10 @@ def failing_tests(pattern):
             body = match.group(2) or ""
             if "<failure" in body or "<error" in body:
                 attrs = dict(ATTRIBUTE.findall(match.group(1)))
-                failures.append(attrs.get("classname", "?") + "." + attrs.get("name", "?"))
+                classname = attrs.get("classname") or "?"
+                name = attrs.get("name")
+                # Un échec à l'initialisation de la classe (@BeforeAll) n'a pas de nom de méthode.
+                failures.append(classname + "." + name if name else classname + " (initialisation)")
     return failures
 
 
