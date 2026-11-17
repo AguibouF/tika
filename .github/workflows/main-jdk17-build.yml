@@ -28,7 +28,51 @@ on:
       - 'docs/**'
 
 jobs:
+  # IFT3913 - Tâche 3 : fait échouer le build si un commit (push sur main) ou
+  # une pull request introduit une vulnérabilité Semgrep absente du commit de
+  # référence. Les vulnérabilités déjà présentes dans Tika ne bloquent pas.
+  semgrep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Historique complet : le commit de référence doit exister localement.
+          fetch-depth: 0
+      - name: Install Semgrep
+        # Version figée pour que les résultats soient reproductibles.
+        run: pipx install semgrep==1.185.0
+      - name: Semgrep (new findings only)
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -n "$PR_BASE" ]; then
+            # Pull request : tout ce que la PR introduit par rapport à la branche cible.
+            BASE=$(git merge-base "$PR_BASE" HEAD)
+          else
+            # Push : ce que le push introduit par rapport au commit précédent.
+            BASE="$PUSH_BEFORE"
+          fi
+          # Nouvelle branche (before = 000...) ou push forcé (commit disparu).
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            BASE=$(git merge-base origin/main HEAD)
+          fi
+          echo "Commit de référence : $BASE"
+          semgrep scan --metrics=off \
+            --config p/default --config .semgrep \
+            --baseline-commit "$BASE" \
+            --error --json-output=semgrep.json
+      - name: Upload Semgrep report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep.json
+          if-no-files-found: ignore
+
   build:
+    needs: semgrep
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:

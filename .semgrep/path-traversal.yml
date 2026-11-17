@@ -1,0 +1,16 @@
+
+rules:
+  - id: ift3913-path-traversal
+    languages:
+      - java
+    severity: ERROR
+    message: "Path Traversal possible : chemin utilisateur utilisé sans validation du répertoire autorisé."
+    patterns:
+      - pattern: |
+          Path $PATH = $BASE.resolve($INPUT);
+          ...
+          Files.readString($PATH);
+      - pattern-not-inside: |
+          if (!$PATH.normalize().startsWith($BASE.normalize())) {
+            ...
+          }

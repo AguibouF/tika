@@ -1,0 +1,9 @@
+rules:
+  - id: ift3913-insecure-tls
+    languages:
+      - java
+    severity: ERROR
+    message: "Vérification TLS non sécurisée : le HostnameVerifier accepte tous les noms d'hôte."
+    patterns:
+      - pattern: |
+          return (String $HOST, SSLSession $SESSION) -> true;

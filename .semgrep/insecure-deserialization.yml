@@ -1,0 +1,6 @@
+rules:
+  - id: ift3913-insecure-deserialization
+    languages: [java]
+    severity: ERROR
+    message: "Désérialisation Java potentiellement dangereuse : vérifier la provenance des données et filtrer les classes autorisées."
+    pattern: (java.io.ObjectInputStream $INPUT).readObject()

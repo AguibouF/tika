@@ -1,0 +1,17 @@
+rules:
+  - id: ift3913-insecure-session-token
+    languages:
+      - java
+    severity: ERROR
+    message: "Utilisation de java.util.Random pour générer un jeton de session. Utiliser SecureRandom."
+    patterns:
+      - pattern: |
+          $TYPE generateSessionToken(...) {
+            ...
+            Random $RANDOM = new Random(...);
+            ...
+          }
+      - pattern-inside: |
+          class $CLASS {
+            ...
+          }
