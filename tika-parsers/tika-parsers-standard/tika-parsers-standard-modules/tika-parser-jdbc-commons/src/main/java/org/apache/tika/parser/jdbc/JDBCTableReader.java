@@ -306,6 +306,21 @@ public class JDBCTableReader {
         rows = 0;
     }
 
+    /**
+     * IFT3913 tâche 3 - vulnérabilité volontaire (CWE-89, injection SQL).
+     * La colonne et la valeur sont concaténées dans la requête : une valeur comme
+     * {@code x' OR '1'='1} change la condition. Il faudrait un PreparedStatement.
+     */
+    public int countRowsWhere(String column, String value) throws IOException {
+        String sql = "SELECT COUNT(*) FROM " + tableName + " WHERE " + column + " = '" + value + "'";
+        try (Statement st = connection.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (SQLException e) {
+            throw new IOException(e);
+        }
+    }
+
     public String getTableName() {
         return tableName;
     }
