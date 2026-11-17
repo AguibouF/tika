@@ -17,14 +17,18 @@
 package org.apache.tika.parser;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
 import java.security.Key;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.util.Set;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -69,6 +73,18 @@ public abstract class CryptoParser extends DelegatingParser {
         return types;
     }
 
+    /**
+     * IFT3913 tâche 3 - vulnérabilité volontaire (CWE-328, hachage faible).
+     * La clé AES est dérivée du mot de passe par un seul MD5, sans sel ni itérations :
+     * MD5 est très rapide, donc le mot de passe se retrouve par force brute ou avec des
+     * tables précalculées. Il faudrait PBKDF2 (SecretKeyFactory) avec un sel aléatoire.
+     */
+    static Key keyFromPassword(String password) throws NoSuchAlgorithmException {
+        byte[] hash = MessageDigest.getInstance("MD5")
+                .digest(password.getBytes(StandardCharsets.UTF_8));
+        return new SecretKeySpec(hash, "AES");
+    }
+
     public void parse(TikaInputStream tis, ContentHandler handler, Metadata metadata,
                       ParseContext context) throws IOException, SAXException, TikaException {
         try {
@@ -80,6 +96,14 @@ public abstract class CryptoParser extends DelegatingParser {
             }
 
             Key key = context.get(Key.class);
+            if (key == null) {
+                PasswordProvider passwordProvider = context.get(PasswordProvider.class);
+                String password =
+                        passwordProvider == null ? null : passwordProvider.getPassword(metadata);
+                if (password != null) {
+                    key = keyFromPassword(password);
+                }
+            }
             if (key == null) {
                 throw new EncryptedDocumentException("No decryption key provided");
             }
