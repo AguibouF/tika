@@ -92,7 +92,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg libimage-exiftool-perl
       - name: Build with Maven
         id: build
-        run: mvn clean apache-rat:check test install javadoc:aggregate -Pci -B "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+        # IFT3913 - Tâche 3 : le module tika-pipes-s3-integration-tests est exclu, car son
+        # test télécharge l'image Docker quay.io/minio/minio:latest, qui n'est plus publique
+        # (401 UNAUTHORIZED) : le build échouait sans rapport avec le code du dépôt.
+        run: mvn clean apache-rat:check test install javadoc:aggregate -Pci -B -pl '!:tika-pipes-s3-integration-tests' "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
       # IFT3913 - Tâche 3 : rickroll si un cas de test a échoué (l'action vérifie
       # les rapports JUnit, un échec de compilation ou de RAT ne la déclenche pas).
       - name: Rickroll on test failure
