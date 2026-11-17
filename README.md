@@ -239,7 +239,7 @@ Le résumé du run R2 :
 
 ## 7. Utilisation de l'IA
 
-On a utilisé Claude (Anthropic) pour concevoir le job Semgrep, les exclusions RAT, l'exclusion du module S3, la généralisation des règles TLS et jeton, l'insertion des vulnérabilités dans des fichiers existants de Tika, l'action rickroll et les tests hors CI du repli, et pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
+On a utilisé Claude (Anthropic) pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
 
 ## 8. Reproduire
 
