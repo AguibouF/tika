@@ -294,6 +294,22 @@ public class XMLReaderUtils implements Serializable {
     }
 
     /**
+     * IFT3913 tâche 3 - vulnérabilité volontaire (CWE-611, XXE).
+     * Contrairement à getDocumentBuilder(), la fabrique n'est pas durcie : les DTD et les
+     * entités externes restent actives. Un document contenant
+     * {@code <!ENTITY x SYSTEM "file:///etc/passwd">} fait lire un fichier local au parseur.
+     */
+    public static DocumentBuilder getDocumentBuilderWithoutProtection() throws TikaException {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            return factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new TikaException("XML parser not available", e);
+        }
+    }
+
+    /**
      * Returns the StAX input factory specified in this parsing context.
      * If a factory is not explicitly specified, then a default factory
      * instance is created and returned. The default factory instance is
