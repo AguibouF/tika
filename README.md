@@ -209,7 +209,7 @@ R1 et R3 n'étaient pas prévus, mais ils montrent qu'un vrai test de Tika qui �
 
 ## 7. Utilisation de l'IA
 
-On a utilisé Claude (Anthropic) pour concevoir le job Semgrep, les exclusions RAT, la généralisation des règles TLS et jeton et l'action rickroll, et pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
+On a utilisé Claude (Anthropic) pour rédiger ce document. Tous les chiffres et les liens viennent de vraies exécutions de Semgrep, de Maven et de GitHub Actions.
 
 ## 8. Reproduire
 
